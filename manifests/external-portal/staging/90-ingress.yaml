@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: external-portal-ingress
+  namespace: external-portal
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [staging-external-portal.cic.co.ke]
+      secretName: api-manager-external-tls
+  rules:
+    - host: staging-external-portal.cic.co.ke
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: external-portal-middleware-service
+                port:
+                  number: 8080

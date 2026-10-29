@@ -1,0 +1,11 @@
+persistence:
+  defaultClass: true
+  defaultClassReplicaCount: 3
+defaultSettings:
+  defaultReplicaCount: 3
+  defaultDataPath: /var/lib/longhorn
+  storageMinimalAvailablePercentage: 25
+  backupTarget: ""
+service:
+  ui:
+    type: LoadBalancer

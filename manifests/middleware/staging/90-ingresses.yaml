@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-middleware
+  namespace: middleware
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [staging-portals-api.cic.co.ke]
+      secretName: api-manager-middleware-tls
+  rules:
+    - host: staging-portals-api.cic.co.ke
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-middleware-service
+                port:
+                  number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: internal-portal-ingress
+  namespace: middleware
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [staging-internal-portal.cic.co.ke]
+      secretName: api-manager-middleware-tls
+  rules:
+    - host: staging-internal-portal.cic.co.ke
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: internal-portal-middleware-service
+                port:
+                  number: 8080

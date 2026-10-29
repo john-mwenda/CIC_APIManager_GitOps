@@ -1,0 +1,30 @@
+grafana:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClassName: longhorn
+    size: 5Gi
+  service:
+    type: NodePort
+    nodePort: 30080
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 100Gi
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 2Gi

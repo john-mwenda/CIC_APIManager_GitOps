@@ -1,0 +1,422 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: api-manager-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: workloads-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: main
+    path: manifests/api-manager/staging
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: api-manager
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: middleware-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: workloads-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: main
+    path: manifests/middleware/staging
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: middleware
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-portal-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: workloads-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: main
+    path: manifests/external-portal/staging
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-portal
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-routes-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: workloads-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: main
+    path: manifests/ingress-routes/staging
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  sources:
+    - repoURL: https://kubernetes.github.io/ingress-nginx
+      chart: ingress-nginx
+      targetRevision: 4.11.3
+      helm:
+        releaseName: ingress-nginx
+        valueFiles:
+          - $values/helm/ingress-nginx/values-common.yaml
+          - $values/helm/ingress-nginx/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingress-nginx
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  sources:
+    - repoURL: https://metallb.github.io/metallb
+      chart: metallb
+      targetRevision: 0.14.8
+      helm:
+        releaseName: metallb
+        valueFiles:
+          - $values/helm/metallb/values-common.yaml
+          - $values/helm/metallb/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb-config-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: main
+    path: manifests/metallb-config/staging
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  sources:
+    - repoURL: https://charts.longhorn.io
+      chart: longhorn
+      targetRevision: 1.7.2
+      helm:
+        releaseName: longhorn
+        valueFiles:
+          - $values/helm/longhorn/values-common.yaml
+          - $values/helm/longhorn/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: strimzi-kafka-operator-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  sources:
+    - repoURL: https://strimzi.io/charts/
+      chart: strimzi-kafka-operator
+      targetRevision: 0.45.0
+      helm:
+        releaseName: strimzi-kafka-operator
+        valueFiles:
+          - $values/helm/strimzi-kafka-operator/values-common.yaml
+          - $values/helm/strimzi-kafka-operator/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kafka
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka-cluster-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: main
+    path: manifests/kafka-cluster/staging
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kafka
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  sources:
+    - repoURL: https://charts.bitnami.com/bitnami
+      chart: redis
+      targetRevision: 20.6.1
+      helm:
+        releaseName: redis
+        valueFiles:
+          - $values/helm/redis/values-common.yaml
+          - $values/helm/redis/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redis
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  sources:
+    - repoURL: https://charts.min.io/
+      chart: minio
+      targetRevision: 5.4.0
+      helm:
+        releaseName: minio
+        valueFiles:
+          - $values/helm/minio/values-common.yaml
+          - $values/helm/minio/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minio
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: monitoring-staging
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 67.9.0
+      helm:
+        releaseName: prometheus
+        valueFiles:
+          - $values/helm/kube-prometheus-stack/values-common.yaml
+          - $values/helm/kube-prometheus-stack/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: monitoring-staging
+  sources:
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: loki
+      targetRevision: 6.24.0
+      helm:
+        releaseName: loki
+        valueFiles:
+          - $values/helm/loki/values-common.yaml
+          - $values/helm/loki/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: promtail-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: monitoring-staging
+  sources:
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: promtail
+      targetRevision: 6.16.6
+      helm:
+        releaseName: promtail
+        valueFiles:
+          - $values/helm/promtail/values-common.yaml
+          - $values/helm/promtail/values-staging.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true

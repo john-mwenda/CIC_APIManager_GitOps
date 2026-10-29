@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: json-xml-service
+  namespace: api-manager
+  labels:
+    app.kubernetes.io/name: json-xml-service
+    app.kubernetes.io/part-of: cic-api-platform
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: json-xml-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: json-xml-service
+        app.kubernetes.io/part-of: cic-api-platform
+    spec:
+      imagePullSecrets:
+        - name: harbor-regcred
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: json-xml-service
+          # Runnable sample. Replace with the approved immutable Harbor image digest.
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - -listen=:8080
+            - -text=json-xml-service is healthy
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: api-manager-common
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: json-xml-service
+  namespace: api-manager
+  labels:
+    app.kubernetes.io/name: json-xml-service
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: json-xml-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

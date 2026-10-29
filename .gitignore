@@ -1,0 +1,6 @@
+*.swp
+*.tmp
+.idea/
+.vscode/
+rendered/
+secrets/

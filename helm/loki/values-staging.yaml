@@ -1,0 +1,4 @@
+singleBinary:
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 192.168.124.226

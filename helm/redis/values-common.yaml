@@ -1,0 +1,16 @@
+architecture: replication
+auth:
+  enabled: true
+  existingSecret: redis
+  existingSecretPasswordKey: redis-password
+sentinel:
+  enabled: true
+replica:
+  replicaCount: 3
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 8Gi
+pdb:
+  create: true
+  maxUnavailable: 1

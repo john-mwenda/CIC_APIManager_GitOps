@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: workloads-production
+  namespace: argocd
+spec:
+  sourceRepos: [https://github.com/john-mwenda/CIC_APIManager_GitOps.git]
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: api-manager
+    - server: https://kubernetes.default.svc
+      namespace: middleware
+    - server: https://kubernetes.default.svc
+      namespace: external-portal
+    - server: https://kubernetes.default.svc
+      namespace: api-platform
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-production
+  namespace: argocd
+spec:
+  sourceRepos:
+    - https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    - https://charts.bitnami.com/bitnami
+    - https://charts.min.io/
+    - https://charts.longhorn.io
+    - https://strimzi.io/charts/
+    - https://kubernetes.github.io/ingress-nginx
+    - https://metallb.github.io/metallb
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: ingress-nginx
+    - server: https://kubernetes.default.svc
+      namespace: metallb-system
+    - server: https://kubernetes.default.svc
+      namespace: longhorn-system
+    - server: https://kubernetes.default.svc
+      namespace: kafka
+    - server: https://kubernetes.default.svc
+      namespace: redis
+    - server: https://kubernetes.default.svc
+      namespace: minio
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: monitoring-production
+  namespace: argocd
+spec:
+  sourceRepos:
+    - https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    - https://prometheus-community.github.io/helm-charts
+    - https://grafana.github.io/helm-charts
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

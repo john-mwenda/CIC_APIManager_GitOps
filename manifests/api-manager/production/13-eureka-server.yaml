@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eureka-server
+  namespace: api-manager
+  labels:
+    app.kubernetes.io/name: eureka-server
+    app.kubernetes.io/part-of: cic-api-platform
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: eureka-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: eureka-server
+        app.kubernetes.io/part-of: cic-api-platform
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: eureka-server
+          image: hashicorp/http-echo:1.0.0
+          args: ["-listen=:8761", "-text=eureka-server is healthy"]
+          ports:
+            - name: http
+              containerPort: 8761
+          readinessProbe:
+            httpGet: {path: /, port: http}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-server
+  namespace: api-manager
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: eureka-server
+  ports:
+    - name: http
+      port: 8761
+      targetPort: http

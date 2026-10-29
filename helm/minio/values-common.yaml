@@ -1,0 +1,15 @@
+mode: distributed
+replicas: 4
+existingSecret: minio-auth
+persistence:
+  enabled: true
+  storageClass: longhorn
+  size: 50Gi
+service:
+  type: ClusterIP
+consoleService:
+  type: LoadBalancer
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
