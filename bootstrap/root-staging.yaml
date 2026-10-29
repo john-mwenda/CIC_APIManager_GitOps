@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
-    targetRevision: main
+    targetRevision: master
     path: applications/staging
     directory:
       recurse: true
