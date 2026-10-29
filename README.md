@@ -1,4 +1,4 @@
-# CIC GitOps
+# CIC API Manager GitOps
 
 Argo CD repository for staging and production CIC API Manager Kubernetes clusters.
 
