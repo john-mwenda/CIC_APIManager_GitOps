@@ -1,16 +1,52 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cic-production-root
+  name: cic-production-platform-root
   namespace: argocd
 spec:
-  project: default
+  project: bootstrap-production
   source:
     repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
     targetRevision: master
-    path: applications/production
-    directory:
-      recurse: true
+    path: applications/production/platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cic-production-monitoring-root
+  namespace: argocd
+spec:
+  project: bootstrap-production
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: applications/production/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cic-production-workloads-root
+  namespace: argocd
+spec:
+  project: bootstrap-production
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: applications/production/workloads
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

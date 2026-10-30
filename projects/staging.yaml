@@ -1,6 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
+  name: bootstrap-staging
+  namespace: argocd
+spec:
+  sourceRepos:
+    - https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+  namespaceResourceWhitelist:
+    - group: argoproj.io
+      kind: Application
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
   name: workloads-staging
   namespace: argocd
 spec:
@@ -12,8 +27,6 @@ spec:
       namespace: middleware
     - server: https://kubernetes.default.svc
       namespace: external-portal
-    - server: https://kubernetes.default.svc
-      namespace: api-platform
     - server: https://kubernetes.default.svc
       namespace: argocd
   clusterResourceWhitelist:

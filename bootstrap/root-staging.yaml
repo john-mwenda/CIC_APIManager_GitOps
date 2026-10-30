@@ -1,16 +1,52 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cic-staging-root
+  name: cic-staging-platform-root
   namespace: argocd
 spec:
-  project: default
+  project: bootstrap-staging
   source:
     repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
     targetRevision: master
-    path: applications/staging
-    directory:
-      recurse: true
+    path: applications/staging/platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cic-staging-monitoring-root
+  namespace: argocd
+spec:
+  project: bootstrap-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: applications/staging/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cic-staging-workloads-root
+  namespace: argocd
+spec:
+  project: bootstrap-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: applications/staging/workloads
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

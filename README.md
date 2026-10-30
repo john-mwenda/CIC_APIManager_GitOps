@@ -1,21 +1,29 @@
 # CIC API Manager GitOps
 
-Argo CD repository for staging and production CIC API Manager Kubernetes clusters.
+Argo CD GitOps repository for managing deployments and configurations across the CIC API Manager `staging` and `production` Kubernetes clusters.
 
 ## Layout
 
-- `bootstrap/`: one manually applied root Application per environment.
-- `applications/`: child Argo CD Applications; no Kustomize is used.
+- `bootstrap/`: manually applied root Applications per environment.
+- `applications/staging/{platform,monitoring,workloads}/`: staging child Applications.
+- `applications/production/{platform,monitoring,workloads}/`: production child Applications.
 - `manifests/`: plain, directly applicable Kubernetes YAML per environment.
 - `helm/`: values for pinned upstream Helm charts.
-- `projects/`: environment-scoped Argo CD AppProjects.
+- `projects/`: environment-scoped AppProject permissions.
 - `docs/`: bootstrap and brownfield migration procedures.
+
+The repository uses the app-of-apps pattern. Each environment uses three root
+Applications, one per category directory under `applications/<env>/`. Each root
+creates and updates only that category's child `Application` resources. Each child
+references an AppProject that restricts its allowed source repositories,
+destinations, and resource kinds. AppProjects authorize deployments; they do not
+deploy resources or control sync order.
 
 ## Validate
 
 ```powershell
 kubectl apply --dry-run=client -f manifests/api-manager/staging/
-kubectl apply --dry-run=client -f applications/staging/
+kubectl apply --dry-run=client --recursive -f applications/staging/
 helm template redis bitnami/redis -f helm/redis/values-common.yaml -f helm/redis/values-staging.yaml
 ```
 
@@ -31,12 +39,14 @@ directory.
 
 ### 1. Configure and publish the repository
 
-Replace the example repository URL in `bootstrap/`, `applications/`, and `projects/`:
+Replace the example repository URL in `bootstrap/`, `applications/`, and `projects/`.
+Align every Application `targetRevision` with the branch you publish. Roots and child
+Applications currently use `master`.
 
 ```bash
 git add .
 git commit -m "Configure staging GitOps repository"
-git push origin main
+git push origin master
 ```
 
 ### 2. Register a private repository
@@ -64,41 +74,54 @@ kubectl apply -f projects/staging.yaml
 kubectl get appprojects -n argocd
 ```
 
-Expected projects:
+`projects/staging.yaml` creates these staging-specific projects:
 
-- `workloads-staging`
+- `bootstrap-staging`
 - `platform-staging`
 - `monitoring-staging`
+- `workloads-staging`
+
+The `argocd` namespace will also normally contain Argo CD's built-in `default`
+project and may contain projects for other environments.
 
 The repository URL in each project's `sourceRepos` must exactly match the
 Application `repoURL`.
 
-The root Application uses the Argo CD `default` project. Verify that it allows this
-repository and the in-cluster `argocd` destination:
+The staging root Applications use `bootstrap-staging`, which only permits
+Application resources from this repository to be deployed into the `argocd`
+namespace. Apply AppProject changes before applying the roots that reference them.
+No Argo CD sync command is required for an AppProject update itself.
 
-```bash
-kubectl get appproject default -n argocd -o yaml
-```
+### 4. Apply and synchronize the root Applications
 
-If the default project is restricted, permit the repository and destination or
-create a dedicated bootstrap AppProject.
-
-### 4. Apply and synchronize the root Application
+Commit and push the Application directory and root changes before synchronizing;
+Argo CD reads them from the remote repository rather than the local checkout.
 
 ```bash
 kubectl apply -f bootstrap/root-staging.yaml
 kubectl get applications -n argocd
 
-argocd app get cic-staging-root
-argocd app diff cic-staging-root
-argocd app sync cic-staging-root
+argocd app get cic-staging-platform-root
+argocd app diff cic-staging-platform-root
+argocd app sync cic-staging-platform-root
+
+argocd app diff cic-staging-monitoring-root
+argocd app sync cic-staging-monitoring-root
+
+argocd app diff cic-staging-workloads-root
+argocd app sync cic-staging-workloads-root
 ```
 
-The root reads `applications/staging/` and creates the child Applications. Sync is
-manual by design, so creating an Application does not immediately deploy its
-resources.
+Each root reads one directory:
 
-`projects/staging.yaml` is outside the root's source path and is therefore applied
+- `cic-staging-platform-root` → `applications/staging/platform`
+- `cic-staging-monitoring-root` → `applications/staging/monitoring`
+- `cic-staging-workloads-root` → `applications/staging/workloads`
+
+Sync the roots in that order. They create or update child Application resources but
+do not sync those children automatically.
+
+`projects/staging.yaml` is outside the roots' source paths and is therefore applied
 manually whenever its configuration changes.
 
 ### 5. Synchronize child Applications
@@ -106,33 +129,53 @@ manually whenever its configuration changes.
 Review every diff before synchronization. A suitable dependency order is:
 
 ```bash
+argocd app diff longhorn-staging
 argocd app sync longhorn-staging
 
+argocd app diff metallb-staging
 argocd app sync metallb-staging
 argocd app wait metallb-staging --health
+argocd app diff metallb-config-staging
 argocd app sync metallb-config-staging
 
+argocd app diff ingress-nginx-staging
 argocd app sync ingress-nginx-staging
 
+argocd app diff strimzi-kafka-operator-staging
 argocd app sync strimzi-kafka-operator-staging
 argocd app wait strimzi-kafka-operator-staging --health
+argocd app diff kafka-cluster-staging
 argocd app sync kafka-cluster-staging
 
+argocd app diff redis-staging
 argocd app sync redis-staging
+argocd app diff minio-staging
 argocd app sync minio-staging
 
+argocd app diff kube-prometheus-stack-staging
 argocd app sync kube-prometheus-stack-staging
+argocd app diff loki-staging
 argocd app sync loki-staging
+argocd app diff promtail-staging
 argocd app sync promtail-staging
 
+argocd app diff api-manager-staging
 argocd app sync api-manager-staging
+argocd app diff middleware-staging
 argocd app sync middleware-staging
+argocd app diff external-portal-staging
 argocd app sync external-portal-staging
+argocd app diff ingress-routes-staging
 argocd app sync ingress-routes-staging
 ```
 
 MetalLB configuration requires the MetalLB CRDs. Kafka resources require the
 Strimzi operator and its CRDs.
+
+YAML file order does not determine synchronization order. The roots and children use
+manual sync for brownfield adoption, so the commands above provide the current
+workload ordering. Argo CD sync waves only order resources within the same
+Application. The three separate roots do not enforce ordering across one another.
 
 ### 6. Verify
 
@@ -149,3 +192,15 @@ Before syncing against an existing cluster, compare Helm versions, release names
 values, selectors, and PVC templates with the live resources. Also configure the
 required external Secrets, verify the MetalLB address pool, and replace the sample
 images with approved CIC Harbor image digests.
+
+## Production
+
+Production mirrors the staging layout:
+
+1. Apply `projects/production.yaml` (`bootstrap-production`, `platform-production`,
+   `monitoring-production`, `workloads-production`).
+2. Apply and sync the three roots from `bootstrap/root-production.yaml` in order:
+   `cic-production-platform-root`, `cic-production-monitoring-root`,
+   `cic-production-workloads-root`.
+3. Review diffs and sync child Applications with the same dependency order as
+   staging, using the `-production` Application names.
