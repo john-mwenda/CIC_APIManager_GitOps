@@ -1,5 +1,4 @@
-watchNamespaces:
-  - kafka
+# watchNamespaces is set per environment in values-staging.yaml / values-production.yaml
 resources:
   requests:
     cpu: 200m

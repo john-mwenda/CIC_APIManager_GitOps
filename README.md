@@ -37,10 +37,13 @@ Argo CD must already be running in the target cluster. The Git repository must b
 reachable from the Argo CD repo-server; Argo CD cannot read a local workstation
 directory.
 
+### Pre-requisite - Setup argocd on the new cluster
+Follow this docs to setup argocd on cluster
+https://argo-cd.readthedocs.io/en/latest/getting_started/
+
 ### 1. Configure and publish the repository
 
-Replace the example repository URL in `bootstrap/`, `applications/`, and `projects/`.
-Align every Application `targetRevision` with the branch you publish. Roots and child
+Align every Application `targetRevision` with the desired branch. Roots and child
 Applications currently use `master`.
 
 ```bash
@@ -49,12 +52,12 @@ git commit -m "Configure staging GitOps repository"
 git push origin master
 ```
 
-### 2. Register a private repository
+### 2. Register CIC API Manager GitOps repository
 
-Public repositories require no credentials. For private HTTPS Git:
+For private HTTPS Git:
 
 ```bash
-argocd repo add https://gitlab.example.com/platform/cic-gitops.git \
+argocd repo add https://github.com/john-mwenda/CIC_APIManager_GitOps.git \
   --username YOUR_USERNAME \
   --password YOUR_ACCESS_TOKEN
 

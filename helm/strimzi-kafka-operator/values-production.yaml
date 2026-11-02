@@ -1,1 +1,3 @@
-{}
+# Production overrides for strimzi-kafka-operator chart 1.2.0
+watchNamespaces:
+  - kafka-production
