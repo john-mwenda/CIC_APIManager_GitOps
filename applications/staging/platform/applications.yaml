@@ -170,6 +170,31 @@ spec:
       - CreateNamespace=true
       - PruneLast=true
 
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka-cluster-staging-exp
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-staging
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: manifests/kafka-cluster/staging-exp
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kafka-staging-exp
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
