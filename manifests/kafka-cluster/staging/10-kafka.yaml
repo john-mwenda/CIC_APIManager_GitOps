@@ -2,7 +2,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: dual-role
-  namespace: kafka-staging
+  namespace: kafka
   labels:
     strimzi.io/cluster: my-cluster
 spec:
@@ -22,7 +22,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: my-cluster
-  namespace: kafka-staging
+  namespace: kafka
 spec:
   kafka:
     version: 4.3.1

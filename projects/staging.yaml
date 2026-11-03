@@ -61,8 +61,6 @@ spec:
     - server: https://kubernetes.default.svc
       namespace: minio
     - server: https://kubernetes.default.svc
-      namespace: kafka-staging
-    - server: https://kubernetes.default.svc
       namespace: kafka-production
   clusterResourceWhitelist:
     - group: "*"

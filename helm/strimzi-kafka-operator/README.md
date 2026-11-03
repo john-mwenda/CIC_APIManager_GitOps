@@ -11,10 +11,10 @@ Values for the pinned upstream `strimzi-kafka-operator` Helm chart.
 Argo CD Applications set `targetRevision: 1.2.0` and merge:
 
 - `values-common.yaml`
-- `values-staging.yaml` (`watchNamespaces: [kafka-staging]`) or
+- `values-staging.yaml` (`watchNamespaces: [kafka]`) or
 - `values-production.yaml` (`watchNamespaces: [kafka-production]`)
 
-Namespaces must be lowercase DNS labels (`kafka-staging` / `kafka-production`).
+Namespaces must be lowercase DNS labels (`kafka` / `kafka-production`).
 
 This chart installs the **Cluster Operator only**. Kafka version is set on the `Kafka` CR (`spec.kafka.version`), currently **4.3.1**.
 

@@ -139,7 +139,7 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: kafka-staging
+    namespace: kafka
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
@@ -164,7 +164,7 @@ spec:
       recurse: true
   destination:
     server: https://kubernetes.default.svc
-    namespace: kafka-staging
+    namespace: kafka
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
