@@ -11,7 +11,7 @@ spec:
   sources:
     - repoURL: https://prometheus-community.github.io/helm-charts
       chart: kube-prometheus-stack
-      targetRevision: 67.9.0
+      targetRevision: 88.1.3
       helm:
         releaseName: prometheus
         valueFiles:
@@ -42,7 +42,7 @@ spec:
   sources:
     - repoURL: https://grafana.github.io/helm-charts
       chart: loki
-      targetRevision: 6.24.0
+      targetRevision: 7.2.0
       helm:
         releaseName: loki
         valueFiles:
@@ -73,7 +73,7 @@ spec:
   sources:
     - repoURL: https://grafana.github.io/helm-charts
       chart: promtail
-      targetRevision: 6.16.6
+      targetRevision: 6.17.1
       helm:
         releaseName: promtail
         valueFiles:
