@@ -17,12 +17,12 @@ prometheus:
         periodSeconds: 15
     nodeSelector:
       kubernetes.io/hostname: api-manager-master-04
-    replicas: 2
+    replicas: 1
     retention: 30d
     retentionSize: 100Gi
     evaluationInterval: 30s
     walCompression: true
-    podAntiAffinity: hard
+    podAntiAffinity: soft
     resources:
       limits:
         cpu: 2000m
