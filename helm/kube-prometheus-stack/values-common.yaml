@@ -14,7 +14,7 @@ grafana:
       host: smtp.gmail.com:587
       from_address: jmwenda56@gmail.com
       from_name: John Mwenda
-      starttls_policy: OpportunisticStartTLS
+      starttls_policy: MandatoryStartTLS
   smtp:
     existingSecret: prometheus-grafana-smtp
     userKey: user
