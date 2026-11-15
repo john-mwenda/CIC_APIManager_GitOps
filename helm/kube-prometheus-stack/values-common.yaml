@@ -1,5 +1,8 @@
 grafana:
-  adminPassword: CIC@Monitor2026
+  admin:
+    existingSecret: prometheus-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
   enabled: true
   persistence:
     enabled: true
