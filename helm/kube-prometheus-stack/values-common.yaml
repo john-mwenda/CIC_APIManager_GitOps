@@ -34,7 +34,7 @@ prometheus:
       kubernetes.io/hostname: api-manager-master-04
     replicas: 1
     retention: 30d
-    retentionSize: 100Gi
+    retentionSize: 100GiB
     evaluationInterval: 30s
     walCompression: true
     podAntiAffinity: soft
@@ -52,7 +52,7 @@ prometheus:
           accessModes: [ReadWriteOnce]
           resources:
             requests:
-              storage: 120Gi
+              storage: 120GiB
 alertmanager:
   alertmanagerSpec:
     storage:
