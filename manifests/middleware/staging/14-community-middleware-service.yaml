@@ -55,7 +55,7 @@ spec:
             - "-XX:+UseContainerSupport"
             - "-jar"
             - "app.jar"
-            - "--server.port=8080"
+            - "--server.Port=8080"
             - "--spring.profiles.active=staging"
           resources:
             requests:
