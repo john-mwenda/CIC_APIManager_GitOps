@@ -88,34 +88,6 @@ spec:
       port: 8080
       targetPort: 80
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: external-portal-ingress
-  namespace: external-portal
-  labels:
-    app: external-portal-middleware-service
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - external-portal.cic.co.ke
-      secretName: api-manager-external-tls
-  rules:
-    - host: external-portal.cic.co.ke
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: external-portal-middleware-service
-                port:
-                  number: 8080
----
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
