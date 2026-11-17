@@ -8,7 +8,7 @@ Bitnami Redis (replication + Sentinel) on **`longhorn-1`**.
 |---|---|---|
 | App HA | Sentinel mode: 3 `redis-node` pods | Survive pod/node failure |
 | Scheduling | `podAntiAffinityPreset: hard` | One Redis pod per worker (3 workers) |
-| Resources | requests/limits on Redis + Sentinel | Avoid noisy-neighbor / OOM surprises |
+| Resources | Per-env in `values-staging.yaml` / `values-production.yaml` | Staging minimal; production recommended |
 | Disk class | `longhorn-1` | Single CSI replica; avoid 3× Longhorn under Redis RF |
 | AOF | `appendonly yes`, `appendfsync everysec` | ~1 second durability window |
 | RDB | `save 900 1` / `300 10` / `60 10000` | Periodic snapshots for restore/backups |

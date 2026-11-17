@@ -1,13 +1,18 @@
 # SimpleScalable Loki with platform MinIO for chunk/index object storage.
 # Clients should send logs/queries to the gateway Service.
+# Container resources are set per environment.
 deploymentMode: SimpleScalable
 
-# Use the platform MinIO deployment. Do not enable the chart's built-in MinIO.
-minio:
-  enabled: false
+# Chart 21.2.3 no longer exposes a root `minio:` values key. Use the platform
+# MinIO Service endpoint in loki.storage.s3 (do not deploy a chart-bundled MinIO).
 
 loki:
   auth_enabled: false
+  # Pin to chart 21.2.3 appVersion (do not leave tag null / floating).
+  image:
+    registry: docker.io
+    repository: grafana/loki
+    tag: "3.7.10"
   commonConfig:
     # Must be <= write.replicas
     replication_factor: 2
@@ -68,6 +73,21 @@ backend:
 
 gateway:
   enabled: true
+  image:
+    registry: docker.io
+    repository: nginx/nginx-unprivileged
+    tag: "1.31-alpine"
+  metrics:
+    image:
+      registry: ghcr.io
+      repository: jkroepke/access-log-exporter
+      tag: "1.0.2"
+
+sidecar:
+  image:
+    registry: docker.io
+    repository: kiwigrid/k8s-sidecar
+    tag: "2.14.3"
 
 # Disable SingleBinary and unused distributed targets
 singleBinary:
@@ -87,6 +107,10 @@ ingester:
   replicas: 0
 lokiCanary:
   enabled: false
+  image:
+    registry: docker.io
+    repository: grafana/loki-canary
+    tag: "3.7.10"
 querier:
   replicas: 0
 queryFrontend:
@@ -97,5 +121,7 @@ resultsCache:
   enabled: false
 ruler:
   replicas: 0
+# Chart default test image tag is "latest"; keep tests off.
 test:
   enabled: false
+

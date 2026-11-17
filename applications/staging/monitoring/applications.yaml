@@ -40,7 +40,8 @@ metadata:
 spec:
   project: monitoring-staging
   sources:
-    - repoURL: https://grafana.github.io/helm-charts
+    # Loki 21.x is published on the Grafana Community OCI registry (not grafana.github.io).
+    - repoURL: ghcr.io/grafana-community/helm-charts
       chart: loki
       targetRevision: 21.2.3
       helm:

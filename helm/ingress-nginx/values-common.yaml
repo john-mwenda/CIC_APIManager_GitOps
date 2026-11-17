@@ -1,9 +1,18 @@
 controller:
   replicaCount: 2
+  image:
+    registry: registry.k8s.io
+    image: ingress-nginx/controller
+    tag: "v1.15.1"
   service:
     type: LoadBalancer
   admissionWebhooks:
     enabled: true
+    patch:
+      image:
+        registry: registry.k8s.io
+        image: ingress-nginx/kube-webhook-certgen
+        tag: "v1.6.9"
   metrics:
     enabled: true
     serviceMonitor:

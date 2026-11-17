@@ -1,2 +1,32 @@
 global:
   storageClass: longhorn-1
+
+# Sized for small staging nodes (maxmemory must fit under the Redis memory limit).
+commonConfiguration: |-
+  appendonly yes
+  appendfsync everysec
+  auto-aof-rewrite-percentage 100
+  auto-aof-rewrite-min-size 64mb
+  save 900 1
+  save 300 10
+  save 60 10000
+  maxmemory 256mb
+  maxmemory-policy noeviction
+
+sentinel:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+replica:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

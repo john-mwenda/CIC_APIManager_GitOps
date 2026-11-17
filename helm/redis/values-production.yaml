@@ -1,2 +1,32 @@
 global:
   storageClass: longhorn-1
+
+# Production sizing; leave ~30% headroom under the 1Gi limit for AOF rewrite/fork.
+commonConfiguration: |-
+  appendonly yes
+  appendfsync everysec
+  auto-aof-rewrite-percentage 100
+  auto-aof-rewrite-min-size 64mb
+  save 900 1
+  save 300 10
+  save 60 10000
+  maxmemory 700mb
+  maxmemory-policy noeviction
+
+sentinel:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+replica:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

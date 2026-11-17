@@ -1,1 +1,18 @@
-{}
+defaultSettings:
+  guaranteedInstanceManagerCPU: '{"v1":"12","v2":"12"}'
+longhornManager:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+longhornGlobalManager:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

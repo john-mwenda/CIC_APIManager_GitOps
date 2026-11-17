@@ -1,9 +1,18 @@
 controller:
   enabled: true
+  image:
+    repository: quay.io/metallb/controller
+    tag: v0.16.2
 speaker:
   enabled: true
+  image:
+    repository: quay.io/metallb/speaker
+    tag: v0.16.2
   frr:
     enabled: false
+    image:
+      repository: quay.io/frrouting/frr
+      tag: "10.6.2"
 # Keep L2-only mode; MetalLB 0.16.x enables FRR-K8s by default.
 frrk8s:
   enabled: false

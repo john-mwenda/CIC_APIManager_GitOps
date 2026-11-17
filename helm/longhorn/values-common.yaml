@@ -6,6 +6,49 @@ defaultSettings:
   defaultDataPath: /var/lib/longhorn
   storageMinimalAvailablePercentage: 25
   backupTarget: ""
+# Pin every Longhorn / CSI image to the 1.13.0 chart defaults (no floating tags).
+image:
+  longhorn:
+    engine:
+      repository: longhornio/longhorn-engine
+      tag: v1.13.0
+    manager:
+      repository: longhornio/longhorn-manager
+      tag: v1.13.0
+    ui:
+      repository: longhornio/longhorn-ui
+      tag: v1.13.0
+    instanceManager:
+      repository: longhornio/longhorn-instance-manager
+      tag: v1.13.0
+    shareManager:
+      repository: longhornio/longhorn-share-manager
+      tag: v1.13.0
+    backingImageManager:
+      repository: longhornio/backing-image-manager
+      tag: v1.13.0
+    supportBundleKit:
+      repository: longhornio/support-bundle-kit
+      tag: v0.0.98
+  csi:
+    attacher:
+      repository: longhornio/csi-attacher
+      tag: v4.13.0
+    provisioner:
+      repository: longhornio/csi-provisioner
+      tag: v6.3.0
+    nodeDriverRegistrar:
+      repository: longhornio/csi-node-driver-registrar
+      tag: v2.18.0
+    resizer:
+      repository: longhornio/csi-resizer
+      tag: v2.2.1
+    snapshotter:
+      repository: longhornio/csi-snapshotter
+      tag: v8.6.0
+    livenessProbe:
+      repository: longhornio/livenessprobe
+      tag: v2.20.0
 service:
   ui:
     type: LoadBalancer

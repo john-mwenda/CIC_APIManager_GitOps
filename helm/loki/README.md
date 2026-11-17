@@ -18,7 +18,9 @@ SimpleScalable Loki using the platform MinIO cluster for object storage.
 | `replication_factor` | 2 |
 | Object store | `minio.minio.svc.cluster.local:9000` |
 | Buckets | `loki-chunks`, `loki-ruler`, `loki-admin` |
-| Built-in MinIO subchart | Disabled |
+| Chart source | OCI `ghcr.io/grafana-community/helm-charts` (`21.2.3`) |
+| Loki image | `grafana/loki:3.7.10` (pinned in values) |
+| Built-in MinIO | Not used (platform MinIO endpoint only) |
 
 ## Credentials
 

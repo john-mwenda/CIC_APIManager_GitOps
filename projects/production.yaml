@@ -78,6 +78,7 @@ spec:
     - https://github.com/john-mwenda/CIC_APIManager_GitOps.git
     - https://prometheus-community.github.io/helm-charts
     - https://grafana.github.io/helm-charts
+    - ghcr.io/grafana-community/helm-charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: monitoring

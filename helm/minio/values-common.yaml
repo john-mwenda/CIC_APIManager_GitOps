@@ -8,6 +8,11 @@ image:
   tag: RELEASE.2024-12-18T13-15-44Z
   pullPolicy: IfNotPresent
 
+# MinIO Client used by chart jobs/hooks — pin so it cannot float to latest.
+mcImage:
+  repository: quay.io/minio/mc
+  tag: RELEASE.2024-11-21T17-21-54Z
+
 existingSecret: minio-auth
 
 persistence:
@@ -43,14 +48,6 @@ affinity:
                 - minio
         topologyKey: kubernetes.io/hostname
 
-
-resources:
-  requests:
-    cpu: "1"
-    memory: 2Gi
-  limits:
-    cpu: "4"
-    memory: 8Gi
 
 securityContext:
   enabled: true
