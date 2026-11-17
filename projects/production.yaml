@@ -42,6 +42,7 @@ spec:
   sourceRepos:
     - https://github.com/john-mwenda/CIC_APIManager_GitOps.git
     - https://charts.bitnami.com/bitnami
+    - registry-1.docker.io/bitnamicharts
     - https://charts.min.io/
     - https://charts.longhorn.io
     - https://strimzi.io/charts/

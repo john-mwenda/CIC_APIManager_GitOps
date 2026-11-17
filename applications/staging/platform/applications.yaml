@@ -9,9 +9,14 @@ metadata:
 spec:
   project: platform-staging
   sources:
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      path: manifests/storageclasses/staging
+      directory:
+        recurse: true
     - repoURL: https://charts.longhorn.io
       chart: longhorn
-      targetRevision: 1.7.2
+      targetRevision: 1.13.0
       helm:
         releaseName: longhorn
         valueFiles:
@@ -42,7 +47,7 @@ spec:
   sources:
     - repoURL: https://metallb.github.io/metallb
       chart: metallb
-      targetRevision: 0.14.8
+      targetRevision: 0.16.2
       helm:
         releaseName: metallb
         valueFiles:
@@ -97,7 +102,7 @@ spec:
   sources:
     - repoURL: https://kubernetes.github.io/ingress-nginx
       chart: ingress-nginx
-      targetRevision: 4.11.3
+      targetRevision: 4.15.1
       helm:
         releaseName: ingress-nginx
         valueFiles:
@@ -128,7 +133,7 @@ spec:
   sources:
     - repoURL: https://strimzi.io/charts/
       chart: strimzi-kafka-operator
-      targetRevision: 1.2.0
+      targetRevision: 1.3.1
       helm:
         releaseName: strimzi-kafka-operator
         valueFiles:
@@ -182,9 +187,9 @@ metadata:
 spec:
   project: platform-staging
   sources:
-    - repoURL: https://charts.bitnami.com/bitnami
+    - repoURL: registry-1.docker.io/bitnamicharts
       chart: redis
-      targetRevision: 20.6.1
+      targetRevision: 28.3.10
       helm:
         releaseName: redis
         valueFiles:
@@ -213,6 +218,11 @@ metadata:
 spec:
   project: platform-staging
   sources:
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      path: manifests/minio-local-storage/staging
+      directory:
+        recurse: true
     - repoURL: https://charts.min.io/
       chart: minio
       targetRevision: 5.4.0

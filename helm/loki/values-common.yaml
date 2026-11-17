@@ -1,36 +1,90 @@
-backend:
-  replicas: 0
-chunksCache:
+# SimpleScalable Loki with platform MinIO for chunk/index object storage.
+# Clients should send logs/queries to the gateway Service.
+deploymentMode: SimpleScalable
+
+# Use the platform MinIO deployment. Do not enable the chart's built-in MinIO.
+minio:
   enabled: false
-compactor:
-  replicas: 0
-deploymentMode: SingleBinary
-distributor:
-  replicas: 0
-gateway:
-  enabled: false
-indexGateway:
-  replicas: 0
-ingester:
-  replicas: 0
+
 loki:
   auth_enabled: false
   commonConfig:
-    replication_factor: 1
+    # Must be <= write.replicas
+    replication_factor: 2
   limits_config:
     max_query_length: 721h
     retention_period: 30d
   schemaConfig:
     configs:
-    - from: "2024-01-01"
-      index:
-        period: 24h
-        prefix: index_
-      object_store: filesystem
-      schema: v13
-      store: tsdb
+      - from: "2024-01-01"
+        index:
+          period: 24h
+          prefix: index_
+        object_store: s3
+        schema: v13
+        store: tsdb
   storage:
-    type: filesystem
+    type: s3
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
+    s3:
+      endpoint: minio.minio.svc.cluster.local:9000
+      s3ForcePathStyle: true
+      insecure: true
+
+# Credentials Secret (create outside Git in namespace monitoring):
+# kubectl -n monitoring create secret generic loki-minio-credentials \
+#   --from-literal=AWS_ACCESS_KEY_ID='...' \
+#   --from-literal=AWS_SECRET_ACCESS_KEY='...'
+write:
+  replicas: 2
+  extraEnvFrom:
+    - secretRef:
+        name: loki-minio-credentials
+  # WAL only; chunks live in MinIO. Single Longhorn replica is enough
+  # because write RF=2 covers pod failure and MinIO stores durable chunks.
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: longhorn-1
+
+read:
+  replicas: 2
+  extraEnvFrom:
+    - secretRef:
+        name: loki-minio-credentials
+
+backend:
+  replicas: 2
+  extraEnvFrom:
+    - secretRef:
+        name: loki-minio-credentials
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: longhorn-1
+
+gateway:
+  enabled: true
+
+# Disable SingleBinary and unused distributed targets
+singleBinary:
+  replicas: 0
+  persistence:
+    enabled: false
+
+chunksCache:
+  enabled: false
+compactor:
+  replicas: 0
+distributor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+ingester:
+  replicas: 0
 lokiCanary:
   enabled: false
 querier:
@@ -39,21 +93,9 @@ queryFrontend:
   replicas: 0
 queryScheduler:
   replicas: 0
-read:
-  replicas: 0
 resultsCache:
   enabled: false
 ruler:
   replicas: 0
-singleBinary:
-  nodeSelector:
-    kubernetes.io/hostname: api-manager-master-05
-  persistence:
-    enabled: true
-    size: 100Gi
-    storageClass: longhorn
-  replicas: 1
 test:
   enabled: false
-write:
-  replicas: 0

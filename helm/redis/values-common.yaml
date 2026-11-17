@@ -1,16 +1,57 @@
 architecture: replication
+
+# Chart 28.3.10 packages Redis 8.10.3; pin the app tag explicitly.
+# Verify both tags exist in the registry you pull from.
+image:
+  tag: 8.10.3
+
 auth:
   enabled: true
   existingSecret: redis
   existingSecretPasswordKey: redis-password
+
+# AOF for near-real-time durability + periodic RDB for faster restore/backups.
+# appendfsync everysec: at most ~1s of writes lost on crash.
+# maxmemory leaves ~30% of the 1Gi limit as headroom for fork/rewrite overhead.
+commonConfiguration: |-
+  appendonly yes
+  appendfsync everysec
+  auto-aof-rewrite-percentage 100
+  auto-aof-rewrite-min-size 64mb
+  save 900 1
+  save 300 10
+  save 60 10000
+  maxmemory 700mb
+  maxmemory-policy noeviction
+
 sentinel:
   enabled: true
+  image:
+    tag: 8.10.3
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+# With sentinel.enabled, Bitnami deploys one StatefulSet of this many nodes
+# (each pod runs Redis + Sentinel). The master: section is not used.
 replica:
   replicaCount: 3
+  podAntiAffinityPreset: hard
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
   persistence:
     enabled: true
-    storageClass: longhorn
-    size: 8Gi
-pdb:
-  create: true
-  maxUnavailable: 1
+    storageClass: longhorn-1
+    size: 10Gi
+  pdb:
+    create: true
+    maxUnavailable: 1

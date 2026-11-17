@@ -1,15 +1,81 @@
 mode: distributed
 replicas: 4
+pools: 1
+drivesPerNode: 1
+
+image:
+  repository: quay.io/minio/minio
+  tag: RELEASE.2024-12-18T13-15-44Z
+  pullPolicy: IfNotPresent
+
 existingSecret: minio-auth
+
 persistence:
   enabled: true
-  storageClass: longhorn
+  storageClass: minio-local
+  accessMode: ReadWriteOnce
   size: 50Gi
-service:
-  type: ClusterIP
-consoleService:
-  type: LoadBalancer
+
+environment:
+  MINIO_STORAGE_CLASS_STANDARD: "EC:2"
+
+# Schedule only on nodes labelled for MinIO, including labelled control-plane nodes.
+# Example: kubectl label node <node> workload.cic.io/minio=true
+nodeSelector:
+  workload.cic.io/minio: "true"
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - minio
+        topologyKey: kubernetes.io/hostname
+
+
 resources:
   requests:
-    cpu: 250m
-    memory: 512Mi
+    cpu: "1"
+    memory: 2Gi
+  limits:
+    cpu: "4"
+    memory: 8Gi
+
+securityContext:
+  enabled: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+service:
+  type: ClusterIP
+
+consoleService:
+  type: LoadBalancer
+
+buckets:
+  - name: loki-chunks
+    policy: none
+    purge: false
+  - name: loki-ruler
+    policy: none
+    purge: false
+  - name: loki-admin
+    policy: none
+    purge: false
+
+metrics:
+  serviceMonitor:
+    enabled: false
+    includeNode: true

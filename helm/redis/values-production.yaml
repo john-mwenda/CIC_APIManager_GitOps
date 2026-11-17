@@ -1,2 +1,2 @@
 global:
-  storageClass: longhorn
+  storageClass: longhorn-1

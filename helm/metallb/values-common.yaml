@@ -4,3 +4,6 @@ speaker:
   enabled: true
   frr:
     enabled: false
+# Keep L2-only mode; MetalLB 0.16.x enables FRR-K8s by default.
+frrk8s:
+  enabled: false

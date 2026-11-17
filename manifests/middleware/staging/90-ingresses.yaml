@@ -1,12 +1,19 @@
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api-gateway-middleware
   namespace: middleware
+  labels:
+    app: api-gateway-middleware-service
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:
-    - hosts: [staging-portals-api.cic.co.ke]
+    - hosts:
+        - staging-portals-api.cic.co.ke
       secretName: api-manager-middleware-tls
   rules:
     - host: staging-portals-api.cic.co.ke
@@ -25,10 +32,16 @@ kind: Ingress
 metadata:
   name: internal-portal-ingress
   namespace: middleware
+  labels:
+    app: internal-portal-middleware-service
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:
-    - hosts: [staging-internal-portal.cic.co.ke]
+    - hosts:
+        - staging-internal-portal.cic.co.ke
       secretName: api-manager-middleware-tls
   rules:
     - host: staging-internal-portal.cic.co.ke
