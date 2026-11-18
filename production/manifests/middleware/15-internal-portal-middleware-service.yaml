@@ -32,14 +32,14 @@ spec:
         - name: internal-portal-middleware-service
           image: 192.168.122.31:8085/api-manager/internal-portal:v1.0.3
           imagePullPolicy: Always
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            runAsNonRoot: true
-            runAsUser: 10001
-            capabilities:
-              drop:
-                - ALL
+          # securityContext:
+          #   allowPrivilegeEscalation: false
+          #   readOnlyRootFilesystem: false
+          #   runAsNonRoot: true
+          #   runAsUser: 10001
+          #   capabilities:
+          #     drop:
+          #       - ALL
           ports:
             - containerPort: 80
               name: http
