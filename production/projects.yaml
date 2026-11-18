@@ -61,6 +61,8 @@ spec:
       namespace: redis
     - server: https://kubernetes.default.svc
       namespace: minio
+    - server: https://kubernetes.default.svc
+      namespace: kafka
   clusterResourceWhitelist:
     - group: "*"
       kind: "*"
@@ -82,6 +84,8 @@ spec:
   destinations:
     - server: https://kubernetes.default.svc
       namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: kube-system
   clusterResourceWhitelist:
     - group: "*"
       kind: "*"

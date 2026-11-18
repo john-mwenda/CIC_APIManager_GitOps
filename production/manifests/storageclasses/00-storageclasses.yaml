@@ -1,4 +1,4 @@
-# Custom StorageClasses for this environment.
+# Custom StorageClasses for this environment, this includes Longhorn and HDD storage classes
 # Default `longhorn` (3 replicas) remains managed by the Longhorn Helm chart.
 ---
 # Single-replica Longhorn for rebuildable / app-replicated data
@@ -11,10 +11,26 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
-reclaimPolicy: Delete
+reclaimPolicy: Retain
 volumeBindingMode: Immediate
 parameters:
   numberOfReplicas: "1"
+  staleReplicaTimeout: "30"
+  fsType: "ext4"
+  dataLocality: "disabled"
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-2
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "2"
   staleReplicaTimeout: "30"
   fsType: "ext4"
   dataLocality: "disabled"

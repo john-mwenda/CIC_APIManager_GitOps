@@ -11,3 +11,7 @@ directory is managed by its corresponding root Application in
 - `cic-production-platform-root` → `platform/`
 - `cic-production-monitoring-root` → `monitoring/`
 - `cic-production-workloads-root` → `workloads/`
+
+Sync `kube-prometheus-stack-production` before `ingress-nginx-production`. The
+ingress-nginx chart creates a ServiceMonitor, and that CRD is installed by
+kube-prometheus-stack.

@@ -24,7 +24,7 @@ spec:
       - id: 0
         type: persistent-claim
         size: 50Gi
-        class: longhorn-1
+        class: longhorn-2
         deleteClaim: false
         kraftMetadata: shared
   template:

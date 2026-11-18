@@ -16,3 +16,6 @@ longhornGlobalManager:
     limits:
       cpu: 500m
       memory: 512Mi
+service:
+  ui:
+    loadBalancerIP: 192.168.124.225

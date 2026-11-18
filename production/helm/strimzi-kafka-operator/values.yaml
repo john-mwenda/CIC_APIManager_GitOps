@@ -1,4 +1,4 @@
-# Production overrides for strimzi-kafka-operator
+# Staging overrides for strimzi-kafka-operator
 watchNamespaces:
   - kafka
 resources:

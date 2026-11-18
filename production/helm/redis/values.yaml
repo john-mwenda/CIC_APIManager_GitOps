@@ -1,7 +1,16 @@
 global:
   storageClass: longhorn-1
+  # Bitnami Secure Images are not anonymously pullable. Create this
+  # docker-registry Secret in the redis namespace before sync.
+  imagePullSecrets:
+    - bitnami-regcred
 
-# Production sizing; leave ~30% headroom under the 1Gi limit for AOF rewrite/fork.
+# Catalog tags for chart 28.3.10. The shared pins (8.10.3, 1.37.1) are not
+# published on the public Docker Hub repository.
+image:
+  tag: "8.10.3-photon-5-r0"
+
+# Sized for small production nodes (maxmemory must fit under the Redis memory limit).
 commonConfiguration: |-
   appendonly yes
   appendfsync everysec
@@ -14,6 +23,8 @@ commonConfiguration: |-
   maxmemory-policy noeviction
 
 sentinel:
+  image:
+    tag: "8.10.3-photon-5-r0"
   resources:
     requests:
       cpu: 50m
@@ -21,6 +32,10 @@ sentinel:
     limits:
       cpu: 250m
       memory: 128Mi
+
+kubectl:
+  image:
+    tag: "1.37.1-r9"
 
 replica:
   resources:

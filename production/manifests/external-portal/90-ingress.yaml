@@ -1,15 +1,22 @@
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: external-portal-ingress
   namespace: external-portal
+  labels:
+    app: external-portal-middleware-service
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:
-    - hosts: [external-portal.cic.co.ke]
+    - hosts:
+        - production-external-portal.cic.co.ke
       secretName: api-manager-external-tls
   rules:
-    - host: external-portal.cic.co.ke
+    - host: production-external-portal.cic.co.ke
       http:
         paths:
           - path: /

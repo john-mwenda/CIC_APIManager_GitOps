@@ -1,17 +1,22 @@
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api-gateway
   namespace: api-manager
+  labels:
+    app: api-gateway-service
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:
-    - hosts: [api-manager.cic.co.ke]
+    - hosts:
+        - production-api-manager.cic.co.ke
       secretName: api-manager-tls
   rules:
-    - host: api-manager.cic.co.ke
+    - host: production-api-manager.cic.co.ke
       http:
         paths:
           - path: /

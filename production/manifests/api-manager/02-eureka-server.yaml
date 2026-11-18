@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eureka-server
+  namespace: api-manager
+  labels:
+    app.kubernetes.io/name: eureka-server
+    app: eureka-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eureka-server
+  template:
+    metadata:
+      labels:
+        app: eureka-server
+    spec:
+      imagePullSecrets:
+        - name: harbor-regcred
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - eureka-server
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: eureka-server
+          image: 192.168.122.31:8085/api-manager/eureka-server:v1.0.0
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8761
+              name: http
+          env:
+            - name: EUREKA_CLIENT_REGISTERWITHEUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCHREGISTRY
+              value: "false"
+          command: ["java"]
+          args:
+            - "-XX:MinHeapFreeRatio=20"
+            - "-XX:MaxHeapFreeRatio=40"
+            - "-Djava.awt.headless=true"
+            - "-XX:+UseContainerSupport"
+            - "-jar"
+            - "app.jar"
+            - "--server.port=8761"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8761
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8761
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8761
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-server
+  namespace: api-manager
+  labels:
+    app: eureka-server
+spec:
+  type: ClusterIP
+  selector:
+    app: eureka-server
+  ports:
+    - name: http
+      port: 8761
+      targetPort: 8761
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: eureka-server
+  namespace: api-manager
+  labels:
+    app: eureka-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: eureka-server
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: eureka-server
+  namespace: api-manager
+  labels:
+    app: eureka-server
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: eureka-server
