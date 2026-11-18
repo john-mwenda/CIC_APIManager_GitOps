@@ -13,10 +13,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - production-portals-api.cic.co.ke
+        - portals-api.cic.co.ke
       secretName: api-manager-middleware-tls
   rules:
-    - host: production-portals-api.cic.co.ke
+    - host: portals-api.cic.co.ke
       http:
         paths:
           - path: /
@@ -41,10 +41,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - production-internal-portal.cic.co.ke
+        - internal-developer-portal.cic.co.ke
       secretName: api-manager-middleware-tls
   rules:
-    - host: production-internal-portal.cic.co.ke
+    - host: internal-developer-portal.cic.co.ke
       http:
         paths:
           - path: /
