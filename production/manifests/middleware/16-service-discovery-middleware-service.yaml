@@ -31,7 +31,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
         - name: service-discovery-middleware-service
-          image: 192.168.122.31:8085/api-manager/portal-backend/service-discovery:production
+          image: 192.168.122.31:8085/api-manager/portal-backend/service-discovery:v1.0.1
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false

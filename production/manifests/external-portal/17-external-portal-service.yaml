@@ -30,7 +30,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
         - name: external-portal-middleware-service
-          image: 192.168.122.31:8085/api-manager/external-portal:production
+          image: 192.168.122.31:8085/api-manager/external-portal:v1.0.0
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false

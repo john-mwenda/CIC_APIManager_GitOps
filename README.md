@@ -404,7 +404,7 @@ Each root reads one directory:
 - `cic-staging-monitoring-root` → `staging/applications/monitoring`
 - `cic-staging-workloads-root` → `staging/applications/workloads`
 
-Sync the roots in that order. They create or update child Application resources but
+Sync the roots in that order (NOTE: sync order is only required if deploying a totally fresh deployment). They create or update child Application resources but
 do not sync those children automatically.
 
 `staging/projects.yaml` is outside the roots' source paths and is therefore applied
