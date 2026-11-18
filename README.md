@@ -4,19 +4,20 @@ Argo CD GitOps repository for managing deployments and configurations across the
 
 ## Layout
 
-- `bootstrap/`: manually applied root Applications per environment.
-- `applications/staging/{platform,monitoring,workloads}/`: staging child Applications.
-- `applications/production/{platform,monitoring,workloads}/`: production child Applications.
-- `manifests/`: plain, directly applicable Kubernetes YAML per environment.
-- `helm/`: values for pinned upstream Helm charts.
-- `projects/`: environment-scoped AppProject permissions.
+- `shared/helm/<chart>/`: `values-common.yaml` shared by both clusters, plus the chart notes.
+- `staging/` and `production/`: one directory per environment.
+  - `applications/{platform,monitoring,workloads}/`: child Applications.
+  - `manifests/<component>/`: plain Kubernetes YAML.
+  - `helm/<chart>/values.yaml`: environment overlay merged after `values-common.yaml`.
+  - `bootstrap/root.yaml`: manually applied root Applications.
+  - `projects.yaml`: environment-scoped AppProject permissions.
 - `docs/`: bootstrap, migration, and the Kubernetes **1.35.9** version baseline.
 
 Platform and monitoring Helm pins target **Kubernetes 1.35.9**. See
 `docs/VERSION-BASELINE-K8S-1.35.9.md`.
 
 The repository uses the app-of-apps pattern. Each environment uses three root
-Applications, one per category directory under `applications/<env>/`. Each root
+Applications, one per category directory under `<env>/applications/`. Each root
 creates and updates only that category's child `Application` resources. Each child
 references an AppProject that restricts its allowed source repositories,
 destinations, and resource kinds. AppProjects authorize deployments; they do not
@@ -25,9 +26,9 @@ deploy resources or control sync order.
 ## Validate
 
 ```powershell
-kubectl apply --dry-run=client -f manifests/api-manager/staging/
-kubectl apply --dry-run=client --recursive -f applications/staging/
-helm template redis bitnami/redis -f helm/redis/values-common.yaml -f helm/redis/values-staging.yaml
+kubectl apply --dry-run=client -f staging/manifests/api-manager/
+kubectl apply --dry-run=client --recursive -f staging/applications/
+helm template redis bitnami/redis -f shared/helm/redis/values-common.yaml -f staging/helm/redis/values.yaml
 ```
 
 The workload manifests use `hashicorp/http-echo:1.0.0` so the sample can run without
@@ -77,11 +78,11 @@ than disabling TLS verification.
 AppProjects authorize repositories, destination namespaces, and resource kinds:
 
 ```bash
-kubectl apply -f projects/staging.yaml
+kubectl apply -f staging/projects.yaml
 kubectl get appprojects -n argocd
 ```
 
-`projects/staging.yaml` creates these staging-specific projects:
+`staging/projects.yaml` creates these staging-specific projects:
 
 - `bootstrap-staging`
 - `platform-staging`
@@ -117,14 +118,21 @@ kubectl create namespace external-portal --dry-run=client -o yaml | kubectl appl
 
 #### Platform
 
-**Redis** (`helm/redis` → `auth.existingSecret: redis`, key `redis-password`):
+**Redis** (`shared/helm/redis` → `auth.existingSecret: redis`, key `redis-password`).
+Staging also pulls Bitnami Secure Images (`staging/helm/redis/values.yaml` →
+`global.imagePullSecrets: [bitnami-regcred]`):
 
 ```bash
 kubectl -n redis create secret generic redis \
   --from-literal=redis-password='CHANGE_ME_REDIS_PASSWORD'
+
+kubectl -n redis create secret docker-registry bitnami-regcred \
+  --docker-server='registry-1.docker.io' \
+  --docker-username='CHANGE_ME_BITNAMI_USER' \
+  --docker-password='CHANGE_ME_BITNAMI_PASSWORD'
 ```
 
-**MinIO** (`helm/minio` → `existingSecret: minio-auth`, keys `rootUser` / `rootPassword`):
+**MinIO** (`shared/helm/minio` → `existingSecret: minio-auth`, keys `rootUser` / `rootPassword`):
 
 ```bash
 kubectl -n minio create secret generic minio-auth \
@@ -134,7 +142,7 @@ kubectl -n minio create secret generic minio-auth \
 
 #### Monitoring
 
-**Loki → MinIO credentials** (`helm/loki` → Secret `loki-minio-credentials`).
+**Loki → MinIO credentials** (`shared/helm/loki` → Secret `loki-minio-credentials`).
 Use a MinIO access key that can read/write the `loki-chunks`, `loki-ruler`, and
 `loki-admin` buckets (often the same values as `minio-auth` during bootstrap):
 
@@ -144,7 +152,7 @@ kubectl -n monitoring create secret generic loki-minio-credentials \
   --from-literal=AWS_SECRET_ACCESS_KEY='CHANGE_ME_MINIO_ROOT_PASSWORD'
 ```
 
-**Grafana admin** (`helm/kube-prometheus-stack` staging/production →
+**Grafana admin** (`staging/helm/kube-prometheus-stack/values.yaml` and `production/helm/kube-prometheus-stack/values.yaml` →
 `grafana.admin.existingSecret: prometheus-grafana`, keys `admin-user` /
 `admin-password`):
 
@@ -154,7 +162,7 @@ kubectl -n monitoring create secret generic prometheus-grafana \
   --from-literal=admin-password='CHANGE_ME_GRAFANA_ADMIN_PASSWORD'
 ```
 
-**Grafana SMTP** (`helm/kube-prometheus-stack` →
+**Grafana SMTP** (`shared/helm/kube-prometheus-stack` →
 `grafana.smtp.existingSecret: prometheus-grafana-smtp`, keys `user` / `password`):
 
 ```bash
@@ -208,6 +216,7 @@ kubectl -n external-portal create secret tls api-manager-external-tls \
 | Secret | Namespace | Consumed by |
 |---|---|---|
 | `redis` | `redis` | Redis Application |
+| `bitnami-regcred` | `redis` | Staging Redis image pulls (Bitnami Secure Images) |
 | `minio-auth` | `minio` | MinIO Application |
 | `loki-minio-credentials` | `monitoring` | Loki Application |
 | `prometheus-grafana` | `monitoring` | kube-prometheus-stack (Grafana admin) |
@@ -288,7 +297,7 @@ ROUTES_TRIGGER=true
 SPRING_DATASOURCE_PASSWORD=CHANGE_ME_DB_PASSWORD
 SPRING_DATASOURCE_URL=jdbc:postgresql://CHANGE_ME_DB_HOST:5432/esbdb
 SPRING_DATASOURCE_USERNAME=CHANGE_ME_DB_USERNAME
-SPRING_REDIS_HOST=redis-master.redis.svc.cluster.local
+SPRING_REDIS_HOST=redis.redis.svc.cluster.local
 SPRING_REDIS_PORT=6379
 EOF
 
@@ -375,7 +384,7 @@ Commit and push the Application directory and root changes before synchronizing;
 Argo CD reads them from the remote repository rather than the local checkout.
 
 ```bash
-kubectl apply -f bootstrap/root-staging.yaml
+kubectl apply -f staging/bootstrap/root.yaml
 kubectl get applications -n argocd
 
 argocd app get cic-staging-platform-root
@@ -391,14 +400,14 @@ argocd app sync cic-staging-workloads-root
 
 Each root reads one directory:
 
-- `cic-staging-platform-root` → `applications/staging/platform`
-- `cic-staging-monitoring-root` → `applications/staging/monitoring`
-- `cic-staging-workloads-root` → `applications/staging/workloads`
+- `cic-staging-platform-root` → `staging/applications/platform`
+- `cic-staging-monitoring-root` → `staging/applications/monitoring`
+- `cic-staging-workloads-root` → `staging/applications/workloads`
 
 Sync the roots in that order. They create or update child Application resources but
 do not sync those children automatically.
 
-`projects/staging.yaml` is outside the roots' source paths and is therefore applied
+`staging/projects.yaml` is outside the roots' source paths and is therefore applied
 manually whenever its configuration changes.
 
 ### 7. Synchronize child Applications
@@ -418,6 +427,11 @@ argocd app wait metallb-staging --health
 argocd app diff metallb-config-staging
 argocd app sync metallb-config-staging
 
+# Ingress NGINX ships a ServiceMonitor. Sync kube-prometheus-stack first so
+# the monitoring.coreos.com CRDs exist, then sync ingress-nginx.
+argocd app diff kube-prometheus-stack-staging
+argocd app sync kube-prometheus-stack-staging
+
 argocd app diff ingress-nginx-staging
 argocd app sync ingress-nginx-staging
 
@@ -433,8 +447,6 @@ argocd app sync redis-staging
 argocd app diff minio-staging
 argocd app sync minio-staging
 
-argocd app diff kube-prometheus-stack-staging
-argocd app sync kube-prometheus-stack-staging
 argocd app diff loki-staging
 argocd app sync loki-staging
 argocd app diff promtail-staging
@@ -451,7 +463,9 @@ argocd app sync ingress-routes-staging
 ```
 
 MetalLB configuration requires the MetalLB CRDs. Kafka resources require the
-Strimzi operator and its CRDs.
+Strimzi operator and its CRDs. The ingress-nginx ServiceMonitor requires the
+kube-prometheus-stack CRDs, so that Application is synced before
+`ingress-nginx-staging`.
 
 YAML file order does not determine synchronization order. The roots and children use
 manual sync for brownfield adoption, so the commands above provide the current
@@ -479,13 +493,14 @@ pool, and replace the sample images with approved CIC Harbor image digests.
 
 Production mirrors the staging layout:
 
-1. Apply `projects/production.yaml` (`bootstrap-production`, `platform-production`,
+1. Apply `production/projects.yaml` (`bootstrap-production`, `platform-production`,
    `monitoring-production`, `workloads-production`).
 2. Create the same [Required Secrets](#4-required-secrets) in the production cluster
    (same names, namespaces, and keys; production credential values).
+   Skip `bitnami-regcred`; only the staging Redis values reference it.
 3. Create the production [Required ConfigMaps](#5-required-configmaps)
    (`api-manager-common` in `api-manager` and `middleware`) with production values.
-4. Apply and sync the three roots from `bootstrap/root-production.yaml` in order:
+4. Apply and sync the three roots from `production/bootstrap/root.yaml` in order:
    `cic-production-platform-root`, `cic-production-monitoring-root`,
    `cic-production-workloads-root`.
 5. Review diffs and sync child Applications with the same dependency order as

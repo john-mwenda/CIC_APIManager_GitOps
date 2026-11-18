@@ -1,0 +1,119 @@
+# Replace kubernetes.io/hostname values with the four MinIO worker node names.
+# Each node must have a dedicated SSD mounted at /data/minio (XFS preferred),
+# owned for MinIO UID/GID 1000, and empty before first deploy.
+# Adjust capacity to the usable size of that filesystem.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-local-production-01
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: local-storage
+    environment: production
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local
+  volumeMode: Filesystem
+  local:
+    path: /data/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - api-manager-master-03
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-local-production-02
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: local-storage
+    environment: production
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local
+  volumeMode: Filesystem
+  local:
+    path: /data/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - api-manager-master-04
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-local-production-03
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: local-storage
+    environment: production
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local
+  volumeMode: Filesystem
+  local:
+    path: /data/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - api-manager-master-05
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-local-production-04
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: local-storage
+    environment: production
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local
+  volumeMode: Filesystem
+  local:
+    path: /data/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - api-manager-master-06

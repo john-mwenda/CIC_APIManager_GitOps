@@ -1,0 +1,243 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  sources:
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      path: production/manifests/storageclasses
+      directory:
+        recurse: true
+    - repoURL: https://charts.longhorn.io
+      chart: longhorn
+      targetRevision: 1.13.0
+      helm:
+        releaseName: longhorn
+        valueFiles:
+          - $values/shared/helm/longhorn/values-common.yaml
+          - $values/production/helm/longhorn/values.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  sources:
+    - repoURL: https://metallb.github.io/metallb
+      chart: metallb
+      targetRevision: 0.16.2
+      helm:
+        releaseName: metallb
+        valueFiles:
+          - $values/shared/helm/metallb/values-common.yaml
+          - $values/production/helm/metallb/values.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb-config-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: production/manifests/metallb-config
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  sources:
+    - repoURL: https://kubernetes.github.io/ingress-nginx
+      chart: ingress-nginx
+      targetRevision: 4.15.1
+      helm:
+        releaseName: ingress-nginx
+        valueFiles:
+          - $values/shared/helm/ingress-nginx/values-common.yaml
+          - $values/production/helm/ingress-nginx/values.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingress-nginx
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: strimzi-kafka-operator-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  sources:
+    - repoURL: https://strimzi.io/charts/
+      chart: strimzi-kafka-operator
+      targetRevision: 1.3.1
+      helm:
+        releaseName: strimzi-kafka-operator
+        valueFiles:
+          - $values/shared/helm/strimzi-kafka-operator/values-common.yaml
+          - $values/production/helm/strimzi-kafka-operator/values.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kafka
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka-cluster-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  source:
+    repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+    targetRevision: master
+    path: production/manifests/kafka-cluster
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kafka
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  sources:
+    - repoURL: registry-1.docker.io/bitnamicharts
+      chart: redis
+      targetRevision: 28.3.10
+      helm:
+        releaseName: redis
+        valueFiles:
+          - $values/shared/helm/redis/values-common.yaml
+          - $values/production/helm/redis/values.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redis
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  sources:
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      path: production/manifests/minio-local-storage
+      directory:
+        recurse: true
+    - repoURL: https://charts.min.io/
+      chart: minio
+      targetRevision: 5.4.0
+      helm:
+        releaseName: minio
+        valueFiles:
+          - $values/shared/helm/minio/values-common.yaml
+          - $values/production/helm/minio/values.yaml
+    - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minio
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true

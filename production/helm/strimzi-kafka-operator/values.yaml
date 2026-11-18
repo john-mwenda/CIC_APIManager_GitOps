@@ -1,0 +1,10 @@
+# Production overrides for strimzi-kafka-operator
+watchNamespaces:
+  - kafka
+resources:
+  requests:
+    cpu: 200m
+    memory: 384Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi

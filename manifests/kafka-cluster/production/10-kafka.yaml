@@ -11,7 +11,7 @@ spec:
   resources:
     requests:
       cpu: 500m
-      memory: 2Giz
+      memory: 2Gi
     limits:
       cpu: "2"
       memory: 4Gi
@@ -24,7 +24,7 @@ spec:
       - id: 0
         type: persistent-claim
         size: 50Gi
-        class: longhorn-kafka
+        class: longhorn-1
         deleteClaim: false
         kraftMetadata: shared
   template:

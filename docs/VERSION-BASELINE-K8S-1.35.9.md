@@ -5,7 +5,7 @@ Staging and production Applications use the same pins.
 
 Target cluster: **Kubernetes 1.35.9** (supported branch; plan next upgrade before EOL).
 
-Image tags are also pinned in `helm/*/values-common.yaml` so releases do not
+Image tags are also pinned in `shared/helm/*/values-common.yaml` so releases do not
 follow floating chart defaults (especially Bitnami `latest`).
 
 ## Platform
@@ -17,7 +17,7 @@ follow floating chart defaults (especially Bitnami `latest`).
 | Ingress NGINX | `ingress-nginx/ingress-nginx` | `4.15.1` | controller `v1.15.1`; webhook `v1.6.9` | E2E-tested on Kubernetes 1.35; project retired (legacy retain) |
 | Strimzi | `strimzi-kafka-operator` | `1.3.1` | operator `1.3.1` | Supports Kubernetes 1.32–1.37 |
 | Apache Kafka | Strimzi-managed | n/a | Kafka `version: 4.3.1` in CR | Supported by Strimzi 1.3.1 |
-| Redis | OCI `bitnamicharts/redis` | `28.3.10` | redis/sentinel `8.10.3`; kubectl `1.37.1`; os-shell `5`; exporter `1.96.0` | Chart defaults use `latest` — must keep values pins |
+| Redis | OCI `bitnamicharts/redis` | `28.3.10` | shared: redis/sentinel `8.10.3`; kubectl `1.37.1`; os-shell `5`; exporter `1.96.0`. Staging overlay: redis/sentinel `8.10.3-photon-5-r0`; kubectl `1.37.1-r9` | Chart defaults use `latest`. Staging tags are Bitnami Secure Images and need `bitnami-regcred` |
 | MinIO | `minio/minio` | `5.4.0` | minio `RELEASE.2024-12-18T13-15-44Z`; mc `RELEASE.2024-11-21T17-21-54Z` | Legacy distributed 4×1 Local PV |
 
 ## Monitoring

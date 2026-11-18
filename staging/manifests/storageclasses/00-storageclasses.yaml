@@ -1,0 +1,48 @@
+# Custom StorageClasses for this environment, this includes Longhorn and HDD storage classes
+# Default `longhorn` (3 replicas) remains managed by the Longhorn Helm chart.
+---
+# Single-replica Longhorn for rebuildable / app-replicated data
+# (e.g. Loki write WAL). Not for single-copy authoritative datasets.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-1
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "30"
+  fsType: "ext4"
+  dataLocality: "disabled"
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-2
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "30"
+  fsType: "ext4"
+  dataLocality: "disabled"
+---
+# Static Local PV class for MinIO 4x1 dedicated SSDs (not Longhorn).
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: minio-local
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: false
