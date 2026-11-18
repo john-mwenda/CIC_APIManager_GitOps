@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: external-portal-middleware-service
-  namespace: external-portal
+  name: api-gateway-middleware-service
+  namespace: middleware
   labels:
-    app.kubernetes.io/name: external-portal-middleware-service
-    app: external-portal-middleware-service
+    app.kubernetes.io/name: api-gateway-middleware-service
+    app: api-gateway-middleware-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: external-portal-middleware-service
+      app: api-gateway-middleware-service
   template:
     metadata:
       labels:
-        app: external-portal-middleware-service
+        app: api-gateway-middleware-service
     spec:
       imagePullSecrets:
         - name: harbor-regcred
@@ -26,11 +26,11 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - external-portal-middleware-service
+                      - api-gateway-middleware-service
               topologyKey: "kubernetes.io/hostname"
       containers:
-        - name: external-portal-middleware-service
-          image: 192.168.122.31:8085/api-manager/external-portal:v1.0.1
+        - name: api-gateway-middleware-service
+          image: 192.168.122.31:8085/api-manager/portal-backend/api-gateway-service:v1.0.1
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
@@ -41,94 +41,79 @@ spec:
               drop:
                 - ALL
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: http
+          envFrom:
+            - configMapRef:
+                name: api-manager-common
+          command: ["java"]
+          args:
+            - "-XX:MinHeapFreeRatio=20"
+            - "-XX:MaxHeapFreeRatio=40"
+            - "-Djava.awt.headless=true"
+            - "-XX:+UseContainerSupport"
+            - "-jar"
+            - "app.jar"
+            - "--server.port=8080"
+            - "--spring.profiles.active=production"
           resources:
             requests:
               cpu: 250m
-              memory: 256Mi
+              memory: 512Mi
             limits:
               cpu: "1"
-              memory: 512Mi
+              memory: 1Gi
           startupProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: /actuator/health/liveness
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 30
           livenessProbe:
             httpGet:
-              path: /live
-              port: 80
-            initialDelaySeconds: 15
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
             periodSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /ready
-              port: 80
-            initialDelaySeconds: 10
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: external-portal-middleware-service
-  namespace: external-portal
+  name: api-gateway-middleware-service
+  namespace: middleware
   labels:
-    app: external-portal-middleware-service
+    app: api-gateway-middleware-service
 spec:
   type: ClusterIP
   selector:
-    app: external-portal-middleware-service
+    app: api-gateway-middleware-service
   ports:
     - name: http
       port: 8080
-      targetPort: 80
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: external-portal-ingress
-  namespace: external-portal
-  labels:
-    app: external-portal-middleware-service
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - external-portal.cic.co.ke
-      secretName: api-manager-external-tls
-  rules:
-    - host: external-portal.cic.co.ke
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: external-portal-middleware-service
-                port:
-                  number: 8080
+      targetPort: 8080
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: external-portal-middleware-service
-  namespace: external-portal
+  name: api-gateway-middleware-service
+  namespace: middleware
   labels:
-    app: external-portal-middleware-service
+    app: api-gateway-middleware-service
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: external-portal-middleware-service
-  minreplicas: 1
+    name: api-gateway-middleware-service
+  minReplicas: 1
   maxReplicas: 1
   metrics:
     - type: Resource
@@ -141,12 +126,12 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: external-portal-middleware-service
-  namespace: external-portal
+  name: api-gateway-middleware-service
+  namespace: middleware
   labels:
-    app: external-portal-middleware-service
+    app: api-gateway-middleware-service
 spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app: external-portal-middleware-service
+      app: api-gateway-middleware-service
