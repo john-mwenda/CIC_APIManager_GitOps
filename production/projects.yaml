@@ -41,8 +41,7 @@ metadata:
 spec:
   sourceRepos:
     - https://github.com/john-mwenda/CIC_APIManager_GitOps.git
-    - https://charts.bitnami.com/bitnami
-    - registry-1.docker.io/bitnamicharts
+    - https://ot-container-kit.github.io/helm-charts/
     - https://charts.min.io/
     - https://charts.longhorn.io
     - https://strimzi.io/charts/
@@ -59,6 +58,8 @@ spec:
       namespace: kafka
     - server: https://kubernetes.default.svc
       namespace: redis
+    - server: https://kubernetes.default.svc
+      namespace: redis-operator
     - server: https://kubernetes.default.svc
       namespace: minio
     - server: https://kubernetes.default.svc

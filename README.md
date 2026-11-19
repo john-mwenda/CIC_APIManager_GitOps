@@ -28,7 +28,8 @@ deploy resources or control sync order.
 ```powershell
 kubectl apply --dry-run=client -f staging/manifests/api-manager/
 kubectl apply --dry-run=client --recursive -f staging/applications/
-helm template redis bitnami/redis -f shared/helm/redis/values-common.yaml -f staging/helm/redis/values.yaml
+helm repo add ot-helm https://ot-container-kit.github.io/helm-charts/
+helm template redis ot-helm/redis-replication --version 0.17.1 -n redis -f shared/helm/redis/values-common.yaml -f staging/helm/redis/values.yaml
 ```
 
 The workload manifests use `hashicorp/http-echo:1.0.0` so the sample can run without
@@ -118,18 +119,13 @@ kubectl create namespace external-portal --dry-run=client -o yaml | kubectl appl
 
 #### Platform
 
-**Redis** (`shared/helm/redis` → `auth.existingSecret: redis`, key `redis-password`).
-Staging also pulls Bitnami Secure Images (`staging/helm/redis/values.yaml` →
-`global.imagePullSecrets: [bitnami-regcred]`):
+**Redis** (`shared/helm/redis` → Secret `redis`, key `redis-password`), run by the OpsTree
+redis-operator with embedded Sentinel. The same password is used by Redis and Sentinel.
+The images are public (`quay.io/opstree`); no registry secret is required.
 
 ```bash
 kubectl -n redis create secret generic redis \
   --from-literal=redis-password='CHANGE_ME_REDIS_PASSWORD'
-
-kubectl -n redis create secret docker-registry bitnami-regcred \
-  --docker-server='registry-1.docker.io' \
-  --docker-username='CHANGE_ME_BITNAMI_USER' \
-  --docker-password='CHANGE_ME_BITNAMI_PASSWORD'
 ```
 
 **MinIO** (`shared/helm/minio` → `existingSecret: minio-auth`, keys `rootUser` / `rootPassword`):
@@ -215,8 +211,7 @@ kubectl -n external-portal create secret tls api-manager-external-tls \
 
 | Secret | Namespace | Consumed by |
 |---|---|---|
-| `redis` | `redis` | Redis Application |
-| `bitnami-regcred` | `redis` | Staging Redis image pulls (Bitnami Secure Images) |
+| `redis` | `redis` | Redis (OpsTree operator) Application (`redis-password`) |
 | `minio-auth` | `minio` | MinIO Application |
 | `loki-minio-credentials` | `monitoring` | Loki Application |
 | `prometheus-grafana` | `monitoring` | kube-prometheus-stack (Grafana admin) |
@@ -291,13 +286,13 @@ PESALINK_URL=https://CHANGE_ME_PESALINK_HOST/pgw/webservices/PaymentWs
 REDIS_MASTER=mymaster
 REDIS_PASSWORD=CHANGE_ME_REDIS_PASSWORD
 REDIS_PORT=6379
-REDIS_PRIMARY_NODE=redis-headless.redis.svc.cluster.local:26379
-REDIS_SECONDARY_NODE=redis-headless.redis.svc.cluster.local:26379
+REDIS_PRIMARY_NODE=redis-s-hl.redis.svc.cluster.local:26379
+REDIS_SECONDARY_NODE=redis-s-hl.redis.svc.cluster.local:26379
 ROUTES_TRIGGER=true
 SPRING_DATASOURCE_PASSWORD=CHANGE_ME_DB_PASSWORD
 SPRING_DATASOURCE_URL=jdbc:postgresql://CHANGE_ME_DB_HOST:5432/esbdb
 SPRING_DATASOURCE_USERNAME=CHANGE_ME_DB_USERNAME
-SPRING_REDIS_HOST=redis.redis.svc.cluster.local
+SPRING_REDIS_HOST=redis-master.redis.svc.cluster.local
 SPRING_REDIS_PORT=6379
 EOF
 
@@ -347,8 +342,8 @@ QUOTA_ALERTS_ENABLED=true
 REDIS_MASTER=mymaster
 REDIS_PASSWORD=CHANGE_ME_REDIS_PASSWORD
 REDIS_PORT=6379
-REDIS_PRIMARY_NODE=redis-headless.redis.svc.cluster.local:26379
-REDIS_SECONDARY_NODES=redis-headless.redis.svc.cluster.local:26379
+REDIS_PRIMARY_NODE=redis-s-hl.redis.svc.cluster.local:26379
+REDIS_SECONDARY_NODES=redis-s-hl.redis.svc.cluster.local:26379
 SENDGRID_API_KEY=CHANGE_ME_SENDGRID_API_KEY
 SHAREPOINT_BLOGS_DRIVE_ID=CHANGE_ME_SHAREPOINT_BLOGS_DRIVE_ID
 SHAREPOINT_BLOGS_SITE_ID=CHANGE_ME_SHAREPOINT_BLOGS_SITE_ID
@@ -445,6 +440,9 @@ argocd app wait strimzi-kafka-operator-staging --health
 argocd app diff kafka-cluster-staging
 argocd app sync kafka-cluster-staging
 
+# Operator and CRDs first, then the RedisReplication resource
+argocd app sync redis-operator-staging
+argocd app wait redis-operator-staging --health
 argocd app diff redis-staging
 argocd app sync redis-staging
 # MinIO requires four Local PVs on dedicated SSDs (/data/minio) before sync.
@@ -501,7 +499,6 @@ Production mirrors the staging layout:
    `monitoring-production`, `workloads-production`).
 2. Create the same [Required Secrets](#4-required-secrets) in the production cluster
    (same names, namespaces, and keys; production credential values).
-   Skip `bitnami-regcred`; only the staging Redis values reference it.
 3. Create the production [Required ConfigMaps](#5-required-configmaps)
    (`api-manager-common` in `api-manager` and `middleware`) with production values.
 4. Apply and sync the three roots from `production/bootstrap/root.yaml` in order:
@@ -510,3 +507,71 @@ Production mirrors the staging layout:
 5. Review diffs and sync child Applications with the same dependency order as
    staging, using the `-production` Application names.
 
+# Uninstall an existing cluster
+
+1. Remove workloads (from master-01)
+kubectl delete application --all -n argocd      # stop Argo CD from recreating things
+kubectl delete ns api-manager middleware external-portal kafka redis minio monitoring argocd
+kubectl get pvc -A                              # confirm all PVCs are gone
+
+If a namespace sticks in Terminating, find the blocker and clear its finalizers:
+kubectl get ns <ns> -o json | jq '.spec.finalizers=[]' | kubectl replace --raw "/api/v1/namespaces/<ns>/finalize" -f -
+
+2. Remove storage and networking
+helm list -A
+helm uninstall longhorn -n longhorn-system
+kubectl delete ns longhorn-system metallb-system ingress-nginx
+
+Longhorn needs its uninstall job to finish before you delete the namespace. If you skip Helm, set the deleting-confirmation flag first:
+kubectl -n longhorn-system patch settings.longhorn.io deleting-confirmation-flag --type=merge -p '{"value":"true"}'
+
+3. Drain and remove workers (master-04, 05, 06)
+kubectl drain api-manager-master-04 --ignore-daemonsets --delete-emptydir-data --force
+kubectl delete node api-manager-master-04
+
+Repeat for 05 and 06, then on each of those nodes:
+## Worker nodes cleanup
+sudo kubeadm reset -f
+sudo rm -rf /etc/cni/net.d /var/lib/kubelet ~/.kube
+sudo systemctl stop kubelet
+sudo reboot    # clears iptables and the flannel/cni0 interfaces
+
+4. Control-plane nodes (master-03, 02, then 01 last)
+kubectl drain api-manager-master-03 --ignore-daemonsets --delete-emptydir-data --force
+kubectl delete node api-manager-master-03
+Repeat for 02 and 01, then on each of those nodes:
+## Control planes cleanup
+sudo kubeadm reset -f
+sudo rm -rf /etc/cni/net.d /var/lib/kubelet ~/.kube
+sudo systemctl stop kubelet
+sudo rm -rf /var/lib/etcd /etc/kubernetes
+sudo dnf remove -y kubeadm kubelet kubectl
+sudo reboot
+
+
+# Prepare for longhorn - ensure system modules are loaded
+
+1. clear /data/longhorn on all worker nodes
+2. dm_crypt not loaded (all three nodes)
+Run on 04, 05 and 06:
+
+bash
+sudo modprobe dm_crypt
+echo dm_crypt | sudo tee /etc/modules-load.d/longhorn.conf
+lsmod | grep dm_crypt
+
+3. 
+findmnt /data
+ls -la /data/longhorn
+
+4. If you can’t uninstall, remove the disk from each node’s spec (Longhorn UI → Node → Edit → delete disk), wipe the directory as above, then re-add it.
+
+Caution: the wipe destroys any replica data in that path. Only do it if no volumes there matter.
+
+Fix dm_crypt first, then the disks. Once both are done, re-check with kubectl get nodes.longhorn.io -n longhorn-system.
+
+5. Restart longhorn managers
+kubectl -n longhorn-system rollout restart daemonset/longhorn-manager
+
+6. Verify
+kubectl -n longhorn-system describe nodes.longhorn.io | grep -B4 "Type: *KernelModulesLoaded"

@@ -1,69 +1,79 @@
-architecture: replication
+# OpsTree redis-replication chart (0.17.x) + redis-operator. Open-source images from quay.io
+# (anonymously pullable: no registry secret needed). Pin exact tags; do not use "latest".
+#
+# The RedisReplication resource is named after the Helm release ("redis"), which gives:
+#   Redis StatefulSet   redis      (pods redis-0..2, label app=redis)
+#   Sentinel StatefulSet redis-s   (pods redis-s-0..2, label app=redis-s)
+#   Service  redis-master          -> current primary (writes)
+#   Service  redis-s-hl            -> Sentinels, port 26379, master name "mymaster"
+redisReplication:
+  clusterSize: 3
+  image: quay.io/opstree/redis
+  tag: v7.2.13
+  imagePullPolicy: IfNotPresent
+  redisSecret:
+    secretName: redis            # existing Secret
+    secretKey: redis-password
 
-# Chart 28.3.10 defaults many Bitnami tags to "latest". Pin every image used by
-# this release (and helpers) so Argo syncs stay reproducible.
-image:
-  registry: registry-1.docker.io
-  repository: bitnami/redis
-  tag: "8.10.3"
-
-auth:
+# AOF + RDB baseline. Per-environment values add "maxmemory".
+externalConfig:
   enabled: true
-  existingSecret: redis
-  existingSecretPasswordKey: redis-password
+  data: |
+    appendonly yes
+    appendfsync everysec
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    save 900 1
+    save 300 10
+    save 60 10000
+    maxmemory-policy noeviction
 
-# AOF + RDB baseline. maxmemory and container resources are per-environment.
-commonConfiguration: |-
-  appendonly yes
-  appendfsync everysec
-  auto-aof-rewrite-percentage 100
-  auto-aof-rewrite-min-size 64mb
-  save 900 1
-  save 300 10
-  save 60 10000
-  maxmemory-policy noeviction
-
+# Embedded Sentinel (disabled by default in the chart, so it must be enabled here).
+# The embedded Sentinel always monitors the group "mymaster"; quorum defaults to 2.
+# The chart has no masterGroupName/quorum keys, so they are not set here.
 sentinel:
   enabled: true
-  image:
-    registry: registry-1.docker.io
-    repository: bitnami/redis-sentinel
-    tag: "8.10.3"
+  size: 3
+  image: quay.io/opstree/redis-sentinel
+  tag: v7.2.13
+  imagePullPolicy: IfNotPresent
+  downAfterMilliseconds: "5000"
+  failoverTimeout: "10000"
+  parallelSyncs: "1"
+  # One Sentinel per node
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app: redis-s
 
-# Chart annotations for 28.3.10 list these helper versions (values default to latest).
-kubectl:
-  image:
-    registry: registry-1.docker.io
-    repository: bitnami/kubectl
-    tag: "1.37.1"
+redisExporter:
+  enabled: true
+  image: quay.io/opstree/redis-exporter
+  tag: v1.44.0
 
-volumePermissions:
-  image:
-    registry: registry-1.docker.io
-    repository: bitnami/os-shell
-    tag: "5"
+# One Redis pod per node (label app = RedisReplication name = Helm release name "redis")
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            app: redis
 
-sysctl:
-  image:
-    registry: registry-1.docker.io
-    repository: bitnami/os-shell
-    tag: "5"
+storageSpec:
+  volumeClaimTemplate:
+    spec:
+      storageClassName: longhorn-1
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests:
+          storage: 10Gi
 
-metrics:
-  image:
-    registry: registry-1.docker.io
-    repository: bitnami/redis-exporter
-    tag: "1.96.0"
-
-# With sentinel.enabled, Bitnami deploys one StatefulSet of this many nodes
-# (each pod runs Redis + Sentinel). The master: section is not used.
-replica:
-  replicaCount: 3
-  podAntiAffinityPreset: hard
-  persistence:
-    enabled: true
-    storageClass: longhorn-1
-    size: 10Gi
-  pdb:
-    create: true
-    maxUnavailable: 1
+# Chart default is minAvailable: 1; it must be nulled or both fields are rendered.
+pdb:
+  enabled: true
+  minAvailable: null
+  maxUnavailable: 1

@@ -4,10 +4,9 @@
 
 1. Review chart versions against `docs/VERSION-BASELINE-K8S-1.35.9.md`
    and run `helm get values --all` for existing releases.
-2. Create secret material outside Git: `harbor-regcred`, TLS secrets, `redis`,
-   `bitnami-regcred` (in `redis`, for the staging Bitnami image pull),
-   `minio-auth`, `loki-minio-credentials` (in `monitoring`), and
-   `prometheus-grafana`.
+2. Create secret material outside Git: `harbor-regcred`, TLS secrets, `redis`
+   (key `redis-password`, used by Redis and Sentinel), `minio-auth`,
+   `loki-minio-credentials` (in `monitoring`), and `prometheus-grafana`.
 3. Prepare MinIO local disks before syncing MinIO Applications: four worker
    nodes, each with a dedicated SSD mounted at `/data/minio`, and Local PV
    hostnames updated under `<env>/manifests/minio-local-storage/`. Sync Longhorn

@@ -187,9 +187,9 @@ metadata:
 spec:
   project: platform-production
   sources:
-    - repoURL: registry-1.docker.io/bitnamicharts
-      chart: redis
-      targetRevision: 28.3.10
+    - repoURL: https://ot-container-kit.github.io/helm-charts/
+      chart: redis-replication
+      targetRevision: 0.17.1             # >= 0.17.0 required for embedded Sentinel
       helm:
         releaseName: redis
         valueFiles:
@@ -206,6 +206,41 @@ spec:
       - CreateNamespace=true
       - PruneLast=true
       - ServerSideApply=true
+  ignoreDifferences:                     # operator mutates status; avoids perpetual OutOfSync
+    - group: redis.redis.opstreelabs.in
+      kind: RedisReplication
+      jqPathExpressions:
+        - .status
+
+---
+# Operator + CRDs. Sync this Application BEFORE redis-production (manual sync).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-operator-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-production
+  source:
+    repoURL: https://ot-container-kit.github.io/helm-charts/
+    chart: redis-operator
+    targetRevision: 0.24.0
+    helm:
+      releaseName: redis-operator
+      valuesObject:
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits:   {cpu: 200m, memory: 256Mi}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redis-operator
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true             # CRDs are large; avoids annotation-size errors
+      - PruneLast=true
 
 ---
 apiVersion: argoproj.io/v1alpha1
