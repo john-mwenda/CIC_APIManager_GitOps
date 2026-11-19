@@ -19,7 +19,7 @@ persistence:
   enabled: true
   storageClass: minio-local
   accessMode: ReadWriteOnce
-  size: 50Gi
+  size: 200Gi
 
 environment:
   MINIO_STORAGE_CLASS_STANDARD: "EC:2"
