@@ -418,14 +418,14 @@ the Applications that depend on them. Review every diff before synchronization. 
 suitable dependency order is:
 
 ```bash
-argocd app diff longhorn-staging
-argocd app sync longhorn-staging
-
 argocd app diff metallb-staging
 argocd app sync metallb-staging
 argocd app wait metallb-staging --health
 argocd app diff metallb-config-staging
 argocd app sync metallb-config-staging
+
+argocd app diff longhorn-staging
+argocd app sync longhorn-staging
 
 # Ingress NGINX ships a ServiceMonitor. Sync kube-prometheus-stack first so
 # the monitoring.coreos.com CRDs exist, then sync ingress-nginx.
