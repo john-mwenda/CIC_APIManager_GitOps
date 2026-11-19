@@ -424,6 +424,10 @@ argocd app wait metallb-staging --health
 argocd app diff metallb-config-staging
 argocd app sync metallb-config-staging
 
+argocd app diff ingress-nginx-staging
+argocd app sync ingress-nginx-staging
+# initialize with metrics enabled=off, then enable later after installing prometheus
+
 argocd app diff longhorn-staging
 argocd app sync longhorn-staging
 
@@ -505,3 +509,4 @@ Production mirrors the staging layout:
    `cic-production-workloads-root`.
 5. Review diffs and sync child Applications with the same dependency order as
    staging, using the `-production` Application names.
+
