@@ -30,7 +30,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
         - name: eureka-server
-          image: 192.168.122.31:8085/api-manager/eureka-server:v1.0.0
+          image: 192.168.122.31:8085/api-manager/eureka-server:v1.0.1
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false

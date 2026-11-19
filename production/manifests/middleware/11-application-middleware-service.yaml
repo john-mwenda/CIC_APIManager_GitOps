@@ -30,7 +30,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
         - name: application-middleware-service
-          image: 192.168.122.31:8085/api-manager/portal-backend/application-service:v1.0.2
+          image: 192.168.122.31:8085/api-manager/portal-backend/application-service:v1.0.1
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false

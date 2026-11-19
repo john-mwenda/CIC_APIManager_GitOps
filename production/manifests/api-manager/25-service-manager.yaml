@@ -31,7 +31,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
         - name: service-manager
-          image: 192.168.122.31:8085/api-manager/service-manager:v1.0.8
+          image: 192.168.122.31:8085/api-manager/service-manager:v1.0.9
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
