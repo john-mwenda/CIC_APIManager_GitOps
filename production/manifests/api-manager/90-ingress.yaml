@@ -13,10 +13,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - production-api-manager.cic.co.ke
+        - api.cic.co.ke
       secretName: api-manager-tls
   rules:
-    - host: production-api-manager.cic.co.ke
+    - host: api.cic.co.ke
       http:
         paths:
           - path: /
