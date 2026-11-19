@@ -1,5 +1,5 @@
 mode: distributed
-replicas: 4
+replicas: 6
 pools: 1
 drivesPerNode: 1
 

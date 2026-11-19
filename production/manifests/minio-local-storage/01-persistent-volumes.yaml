@@ -5,13 +5,13 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: minio-local-production-03
+  name: minio-local-production-01
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
   labels:
     app.kubernetes.io/name: minio
     app.kubernetes.io/component: local-storage
-    environment: production
+    environment: staging
 spec:
   capacity:
     storage: 100Gi
@@ -29,7 +29,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - api-manager-master-03
+                - api-managerprd-master-01
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -40,7 +40,7 @@ metadata:
   labels:
     app.kubernetes.io/name: minio
     app.kubernetes.io/component: local-storage
-    environment: production
+    environment: staging
 spec:
   capacity:
     storage: 100Gi
@@ -58,7 +58,65 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - api-manager-master-04
+                - api-managerprd-master-02
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-local-production-03
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: local-storage
+    environment: staging
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local
+  volumeMode: Filesystem
+  local:
+    path: /data/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - api-managerprd-master-03
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-local-production-04
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: local-storage
+    environment: staging
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local
+  volumeMode: Filesystem
+  local:
+    path: /data/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - api-managerprd-master-04
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -69,7 +127,7 @@ metadata:
   labels:
     app.kubernetes.io/name: minio
     app.kubernetes.io/component: local-storage
-    environment: production
+    environment: staging
 spec:
   capacity:
     storage: 100Gi
@@ -87,7 +145,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - api-manager-master-05
+                - api-managerprd-master-05
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -98,7 +156,7 @@ metadata:
   labels:
     app.kubernetes.io/name: minio
     app.kubernetes.io/component: local-storage
-    environment: production
+    environment: staging
 spec:
   capacity:
     storage: 100Gi
@@ -116,4 +174,4 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - api-manager-master-06
+                - api-managerprd-master-06
