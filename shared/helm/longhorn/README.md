@@ -19,3 +19,13 @@ Custom classes live in one file per environment:
 - `production/manifests/storageclasses/00-storageclasses.yaml`
 
 They are synced by the Longhorn Argo CD Applications. Sync Longhorn before MinIO and Loki.
+
+## Control plane nodes
+
+The chart does not tolerate the kubeadm control-plane taint. `values-common.yaml` adds that toleration for user-deployed pods (`global.tolerations`) and for system-managed pods (`defaultSettings.taintToleration`).
+
+Disks are created only on nodes labeled `node.longhorn.io/create-default-disk=true`, and only at `/data/longhorn`. Label a control plane after a dedicated disk is mounted there. Leave the label off a node whose only disk also holds etcd.
+
+```bash
+kubectl label node <node> node.longhorn.io/create-default-disk=true
+```

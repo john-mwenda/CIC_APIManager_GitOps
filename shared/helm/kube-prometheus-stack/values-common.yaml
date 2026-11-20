@@ -63,7 +63,7 @@ prometheus:
         periodSeconds: 15
     replicas: 1
     retention: 30d
-    retentionSize: 100GiB
+    retentionSize: 20GiB
     evaluationInterval: 30s
     walCompression: true
     podAntiAffinity: soft
@@ -74,7 +74,7 @@ prometheus:
           accessModes: [ReadWriteOnce]
           resources:
             requests:
-              storage: 120GiB
+              storage: 30Gi
 
 alertmanager:
   alertmanagerSpec:
@@ -85,7 +85,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: longhorn
+          storageClassName: longhorn-2
           accessModes: [ReadWriteOnce]
           resources:
             requests:

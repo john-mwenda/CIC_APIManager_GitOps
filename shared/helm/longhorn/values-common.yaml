@@ -1,3 +1,16 @@
+# kubeadm taints control planes with NoSchedule. The chart tolerates nothing
+# by default, so Longhorn stays off those nodes until both of these are set:
+# global.tolerations for the manager, UI, and driver, and taintToleration for
+# the instance manager, CSI plugin, and engine image.
+global:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule
+
 persistence:
   defaultClass: true
   defaultClassReplicaCount: 3
@@ -6,6 +19,10 @@ defaultSettings:
   defaultDataPath: /data/longhorn
   storageMinimalAvailablePercentage: 25
   backupTarget: ""
+  # Empty taint value matches kubeadm (key=:NoSchedule).
+  taintToleration: "node-role.kubernetes.io/control-plane=:NoSchedule;node-role.kubernetes.io/master=:NoSchedule"
+  # Create /data/longhorn only on nodes labeled node.longhorn.io/create-default-disk=true.
+  createDefaultDiskLabeledNodes: true
 # Pin every Longhorn / CSI image to the 1.13.0 chart defaults (no floating tags).
 image:
   longhorn:
