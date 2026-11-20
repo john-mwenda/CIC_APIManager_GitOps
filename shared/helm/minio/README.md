@@ -1,13 +1,13 @@
 # minio
 
-Distributed MinIO for a **4 nodes × 1 dedicated SSD** topology.
+Distributed MinIO for a **6 nodes × 1 dedicated SSD** topology.
 
 ## Topology
 
 | Setting | Value |
 |---|---|
 | Mode | `distributed` |
-| Replicas / nodes | 4 |
+| Replicas / nodes | 6 |
 | Drives per node | 1 |
 | StorageClass | `minio-local` (static Local PVs, not Longhorn) |
 | Erasure coding | `EC:2` |
@@ -19,7 +19,7 @@ MinIO erasure coding protects object data. Do **not** place these PVCs on Longho
 
 ## Node preparation
 
-On each of the four MinIO nodes (workers and/or labelled control-plane nodes):
+On each of the six MinIO nodes (workers and/or labelled control-plane nodes):
 
 1. Label the node so MinIO can select it:
    `kubectl label node <node> workload.cic.io/minio=true`

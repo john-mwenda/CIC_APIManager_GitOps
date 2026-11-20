@@ -1,6 +1,6 @@
 grafana:
   admin:
-    existingSecret: prometheus-grafana
+    existingSecret: prometheus-grafana-admin
   resources:
     requests:
       cpu: 100m
