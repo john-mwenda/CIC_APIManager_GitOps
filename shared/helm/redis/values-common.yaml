@@ -72,8 +72,9 @@ storageSpec:
         requests:
           storage: 8Gi
 
-# Chart default is minAvailable: 1; it must be nulled or both fields are rendered.
+# Chart default is minAvailable: 1. With 3 replicas, 2 allows one disruption at a time.
+# Set only one of minAvailable/maxUnavailable; the CRD rejects null and PDBs reject both.
 pdb:
   enabled: true
-  minAvailable: null
-  maxUnavailable: 1
+  minAvailable: 2
+  # maxUnavailable intentionally unset: a PDB may only have one of the two fields
