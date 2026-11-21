@@ -70,7 +70,7 @@ storageSpec:
       accessModes: [ReadWriteOnce]
       resources:
         requests:
-          storage: 5Gi
+          storage: 8Gi
 
 # Chart default is minAvailable: 1; it must be nulled or both fields are rendered.
 pdb:
