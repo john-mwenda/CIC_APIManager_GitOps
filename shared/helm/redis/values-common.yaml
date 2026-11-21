@@ -9,7 +9,7 @@
 redisReplication:
   clusterSize: 3
   image: quay.io/opstree/redis
-  tag: v7.2.13
+  tag: v7.2.16
   imagePullPolicy: IfNotPresent
   redisSecret:
     secretName: redis            # existing Secret
@@ -35,7 +35,7 @@ sentinel:
   enabled: true
   size: 3
   image: quay.io/opstree/redis-sentinel
-  tag: v7.2.13
+  tag: v7.2.16
   imagePullPolicy: IfNotPresent
   downAfterMilliseconds: "5000"
   failoverTimeout: "10000"
@@ -52,7 +52,7 @@ sentinel:
 redisExporter:
   enabled: true
   image: quay.io/opstree/redis-exporter
-  tag: v1.44.0
+  tag: v1.89.0
 
 # One Redis pod per node (label app = RedisReplication name = Helm release name "redis")
 affinity:

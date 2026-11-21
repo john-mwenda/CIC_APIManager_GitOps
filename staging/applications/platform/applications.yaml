@@ -191,7 +191,7 @@ spec:
   source:
     repoURL: https://ot-container-kit.github.io/helm-charts/
     chart: redis-operator
-    targetRevision: 0.24.0               # verify latest: helm search repo ot-helm/redis-operator
+    targetRevision: 0.27.0               # verify latest: helm search repo ot-helm/redis-operator
     helm:
       releaseName: redis-operator
       valuesObject:
