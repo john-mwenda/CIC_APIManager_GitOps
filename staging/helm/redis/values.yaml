@@ -1,4 +1,4 @@
-# Staging overrides: sized for small nodes (maxmemory must stay under the memory limit).
+# Staging overrides: sized for 12 GB worker nodes (one Redis + one Sentinel per node).
 # externalConfig.data is a string, so it replaces the shared one: keep it complete.
 externalConfig:
   enabled: true
@@ -10,15 +10,29 @@ externalConfig:
     save 900 1
     save 300 10
     save 60 10000
-    maxmemory 256mb
+    maxmemory 1gb
     maxmemory-policy noeviction
 
 redisReplication:
   resources:
-    requests: {cpu: 50m,  memory: 128Mi}
-    limits:   {cpu: 500m, memory: 512Mi}
+    requests: {cpu: 250m, memory: 2Gi}
+    limits:   {memory: 2Gi}          # no CPU limit: avoids throttling during saves/rewrites
 
 sentinel:
   resources:
-    requests: {cpu: 25m,  memory: 32Mi}
+    requests: {cpu: 50m, memory: 64Mi}
+    limits:   {memory: 128Mi}        # no CPU limit: avoids delayed health checks
+
+redisExporter:
+  resources:
+    requests: {cpu: 25m, memory: 32Mi}
     limits:   {cpu: 100m, memory: 64Mi}
+
+storageSpec:
+  volumeClaimTemplate:
+    spec:
+      storageClassName: longhorn-1
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests:
+          storage: 5Gi
