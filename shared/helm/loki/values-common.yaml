@@ -15,10 +15,13 @@ loki:
     tag: "3.7.10"
   commonConfig:
     # Must be <= write.replicas
-    replication_factor: 2
+    replication_factor: 3
   limits_config:
     max_query_length: 721h
     retention_period: 30d
+  compactor:
+    retention_enabled: true
+    delete_request_store: s3
   schemaConfig:
     configs:
       - from: "2024-01-01"
@@ -44,7 +47,7 @@ loki:
 #   --from-literal=AWS_ACCESS_KEY_ID='...' \
 #   --from-literal=AWS_SECRET_ACCESS_KEY='...'
 write:
-  replicas: 2
+  replicas: 3
   extraEnvFrom:
     - secretRef:
         name: loki-minio-credentials
@@ -52,8 +55,8 @@ write:
   # because write RF=2 covers pod failure and MinIO stores durable chunks.
   persistence:
     enabled: true
-    size: 10Gi
-    storageClass: longhorn-1
+    size: 5Gi
+    storageClass: longhorn-2
 
 read:
   replicas: 2
@@ -68,11 +71,12 @@ backend:
         name: loki-minio-credentials
   persistence:
     enabled: true
-    size: 10Gi
-    storageClass: longhorn-1
+    size: 5Gi
+    storageClass: longhorn-2
 
 gateway:
   enabled: true
+  replicas: 2
   image:
     registry: docker.io
     repository: nginx/nginx-unprivileged
