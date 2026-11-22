@@ -262,9 +262,9 @@ spec:
       path: staging/manifests/minio-local-storage
       directory:
         recurse: true
-    - repoURL: https://charts.min.io/
-      chart: minio
-      targetRevision: 5.4.0
+    - repoURL: https://github.com/pgsty/silo.git
+      targetRevision: RELEASE.2026-11-12T00-00-00Z
+      path: helm/silo
       helm:
         releaseName: minio
         valueFiles:

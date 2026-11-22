@@ -11,8 +11,8 @@ Distributed MinIO for a **6 nodes × 1 dedicated SSD** topology.
 | Drives per node | 1 |
 | StorageClass | `minio-local` (static Local PVs, not Longhorn) |
 | Erasure coding | `EC:2` |
-| Chart | `minio` `5.4.0` |
-| Image | `quay.io/minio/minio:RELEASE.2024-12-18T13-15-44Z` |
+| Chart | `pgsty/silo` `helm/silo` `7.0.5` (`RELEASE.2026-11-12T00-00-00Z`) |
+| Image | `docker.io/pgsty/silo:RELEASE.2026-11-12T00-00-00Z` (server and `mc` jobs) |
 | Credentials secret | `minio-auth` (`rootUser`, `rootPassword`) |
 
 MinIO erasure coding protects object data. Do **not** place these PVCs on Longhorn.

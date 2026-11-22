@@ -19,7 +19,7 @@ follow floating chart defaults.
 | Apache Kafka | Strimzi-managed | n/a | Kafka `version: 4.3.1` in CR | Supported by Strimzi 1.3.1 |
 | Redis Operator (OpsTree) | `ot-container-kit` `redis-operator` | `0.24.0` | operator `0.24.0` | Install first; installs CRDs. Upgrades need manual CRD apply |
 | Redis (OpsTree) | `ot-container-kit` `redis-replication` | `0.17.1` | `quay.io/opstree/redis` + `redis-sentinel` `v7.2.13`; exporter `v1.44.0` | Embedded Sentinel, 3 replicas, `longhorn-1`. Public images, no registry login |
-| MinIO | `minio/minio` | `5.4.0` | minio `RELEASE.2024-12-18T13-15-44Z`; mc `RELEASE.2024-11-21T17-21-54Z` | Legacy distributed 4×1 Local PV |
+| MinIO (Silo) | `pgsty/silo` `helm/silo`, image `docker.io/pgsty/silo` | `7.0.5` | server and mc jobs `RELEASE.2026-11-12T00-00-00Z` | `nameOverride`/`fullnameOverride` keep Service `minio`; standard image, not distroless |
 
 ## Monitoring
 
