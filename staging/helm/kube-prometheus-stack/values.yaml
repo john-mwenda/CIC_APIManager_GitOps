@@ -3,11 +3,11 @@ grafana:
     existingSecret: prometheus-grafana-admin
   resources:
     requests:
-      cpu: 200m
-      memory: 512Mi
+      cpu: 50m
+      memory: 128Mi
     limits:
-      cpu: "1"
-      memory: 2Gi
+      cpu: 200m
+      memory: 256Mi
 
 prometheusOperator:
   resources:
@@ -22,11 +22,11 @@ prometheus:
   prometheusSpec:
     resources:
       requests:
-        cpu: 500m
-        memory: 1Gi
+        cpu: 250m
+        memory: 512Mi
       limits:
-        cpu: "2"
-        memory: 2Gi
+        cpu: "1"
+        memory: 1Gi
 
 
 alertmanager:
