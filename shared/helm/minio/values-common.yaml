@@ -109,3 +109,5 @@ metrics:
   serviceMonitor:
     enabled: true
     includeNode: true
+    labels:
+      release: prometheus
