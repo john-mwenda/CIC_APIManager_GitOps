@@ -36,7 +36,7 @@ The Secret is mounted into write, read, and backend pods via `extraEnvFrom`.
 
 ## Client endpoint
 
-Point Promtail / Alloy / Grafana at the **gateway** Service, not a singleBinary Service.
+Point Alloy at the **gateway** Service, not a singleBinary Service.
 
 Staging exposes the gateway on MetalLB IP `192.168.124.226`.
 

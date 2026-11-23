@@ -65,7 +65,7 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: promtail-production
+  name: alloy-production
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -73,13 +73,13 @@ spec:
   project: monitoring-production
   sources:
     - repoURL: https://grafana.github.io/helm-charts
-      chart: promtail
-      targetRevision: 6.17.1
+      chart: alloy
+      targetRevision: 1.16.0
       helm:
-        releaseName: promtail
+        releaseName: alloy
         valueFiles:
-          - $values/shared/helm/promtail/values-common.yaml
-          - $values/production/helm/promtail/values.yaml
+          - $values/shared/helm/alloy/values-common.yaml
+          - $values/production/helm/alloy/values.yaml
     - repoURL: https://github.com/john-mwenda/CIC_APIManager_GitOps.git
       targetRevision: master
       ref: values

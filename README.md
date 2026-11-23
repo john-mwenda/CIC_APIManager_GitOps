@@ -451,8 +451,8 @@ argocd app sync minio-staging
 
 argocd app diff loki-staging
 argocd app sync loki-staging
-argocd app diff promtail-staging
-argocd app sync promtail-staging
+argocd app diff alloy-staging
+argocd app sync alloy-staging
 
 argocd app diff api-manager-staging
 argocd app sync api-manager-staging

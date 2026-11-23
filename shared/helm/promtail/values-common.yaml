@@ -1,8 +1,0 @@
-config:
-  clients:
-  - url: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
-
-image:
-  registry: docker.io
-  repository: grafana/promtail
-  tag: "3.5.1"

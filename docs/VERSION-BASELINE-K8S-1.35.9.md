@@ -27,7 +27,7 @@ follow floating chart defaults.
 |---|---|---|---|---|
 | kube-prometheus-stack | `prometheus-community` | `93.2.2` | Prometheus `v3.16.0-distroless`; Grafana `13.3.1-distroless`; operator/reloader `v0.95.2`; Alertmanager `v0.35.0`; kube-state-metrics `v2.20.0`; node-exporter `v1.12.1-distroless` | Update CRDs on major bumps |
 | Loki | OCI `ghcr.io/grafana-community/helm-charts` | `21.2.3` | Loki `3.7.10`; gateway nginx `1.31-alpine` | SimpleScalable + external MinIO |
-| Promtail | `grafana/promtail` | `6.17.1` | `3.5.1` | Project is EOL — plan Alloy migration |
+| Alloy | `grafana/alloy` | `1.16.0` | `v1.22.0` | DaemonSet log collector; replaces Promtail |
 
 ## Operational notes
 
