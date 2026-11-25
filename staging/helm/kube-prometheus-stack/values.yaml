@@ -23,11 +23,10 @@ prometheus:
     resources:
       requests:
         cpu: 250m
-        memory: 1Gi
+        memory: 2Gi
       limits:
         cpu: "1"
-        memory: 2Gi
-
+        memory: 4Gi             # request memory close to the limit
 
 alertmanager:
   alertmanagerSpec:

@@ -1,14 +1,14 @@
 defaultSettings:
   # Lower than chart default (12%) so instance managers reserve less CPU on small nodes.
-  guaranteedInstanceManagerCPU: '{"v1":"5","v2":"5"}'
+  guaranteedInstanceManagerCPU: '{"v1":"12","v2":"12"}'
 longhornManager:
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 100m
+      memory: 256Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: "1"
+      memory: 1Gi
 longhornGlobalManager:
   resources:
     requests:
