@@ -7,7 +7,7 @@ grafana:
       memory: 256Mi
     limits:
       cpu: 500m
-      memory: 1Gi    # or 1Gi if it OOMs again
+      memory: 1Gi
 
 prometheusOperator:
   resources:
@@ -20,13 +20,48 @@ prometheusOperator:
 
 prometheus:
   prometheusSpec:
+    scrapeInterval: 60s
+    evaluationInterval: 60s
+    retention: 7d
+    retentionSize: 8GiB
+    enforcedSampleLimit: 100000
     resources:
       requests:
         cpu: 500m
         memory: 4Gi
       limits:
         cpu: "1"
-        memory: 8Gi             # request memory close to the limit
+        memory: 8Gi
+
+# Drop high-cardinality histogram buckets and noisy container metrics (staging).
+kubeApiServer:
+  serviceMonitor:
+    metricRelabelings:
+      - sourceLabels: [__name__]
+        regex: 'apiserver_request_duration_seconds_bucket|apiserver_watch_list_duration_seconds_bucket|apiserver_request_body_size_bytes_bucket|apiserver_watch_cache_read_wait_seconds_bucket|apiserver_response_sizes_bucket|apiserver_request_sli_duration_seconds_bucket|apiserver_watch_events_sizes_bucket|apiserver_admission_controller_admission_duration_seconds_bucket'
+        action: drop
+
+kubeEtcd:
+  serviceMonitor:
+    metricRelabelings:
+      - sourceLabels: [__name__]
+        regex: 'etcd_request_duration_seconds_bucket|etcd_debugging_.*'
+        action: drop
+
+kubelet:
+  serviceMonitor:
+    metricRelabelings:
+      - sourceLabels: [__name__]
+        regex: 'prober_probe_duration_seconds_bucket|kubelet_runtime_operations_duration_seconds_bucket|storage_operation_duration_seconds_bucket|container_blkio_device_usage_total|container_memory_failures_total|container_tasks_state|container_network_.*|container_fs_.*|container_cpu_cfs_.*|kubernetes_feature_enabled'
+        action: drop
+
+# Optional control-plane scrapes — disable in staging to cut series further.
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeProxy:
+  enabled: false
 
 alertmanager:
   alertmanagerSpec:
