@@ -28,10 +28,10 @@ prometheus:
     resources:
       requests:
         cpu: 500m
-        memory: 4Gi
+        memory: 2Gi
       limits:
         cpu: "1"
-        memory: 8Gi
+        memory: 4Gi
 
 # Drop high-cardinality histogram buckets and noisy container metrics (staging).
 kubeApiServer:
