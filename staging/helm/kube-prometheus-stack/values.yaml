@@ -4,10 +4,10 @@ grafana:
   resources:
     requests:
       cpu: 50m
-      memory: 128Mi
-    limits:
-      cpu: 200m
       memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi    # or 1Gi if it OOMs again
 
 prometheusOperator:
   resources:
